@@ -198,7 +198,7 @@ footer{font-size:.88rem;color:var(--ink-2);display:flex;flex-direction:column;ga
 document.documentElement.lang = "en-GB";
 /* ---------- config: in the repo these come from env via the proxy ---------- */
 const CONFIG = {
-  PROXY_BASE: "",      // e.g. "https://before-you-sign.yourname.workers.dev" holds EPC + TfL keys
+  PROXY_BASE: "https://before-you-move-proxy.mayatraykova.workers.dev",      // e.g. "https://before-you-sign.yourname.workers.dev" holds EPC + TfL keys
   TFL_APP_KEY: ""      // optional; raises TfL rate limits. Keep in the proxy, not here, once deployed.
 };
 
@@ -334,6 +334,7 @@ const sampleTag = () => demo ? '<span class="sample-tag">Sample</span>' : "";
 function topicEnergy(R){
   const all = R.epc;
   const src = '<p class="src">Source: EPC register (MHCLG)</p>';
+  if(failed(R,"epc")) return failedTopic("energy","Energy costs","The EPC register");
   if(all.notConnected) return {id:"energy",name:"Energy costs",status:"info",value:"Not connected yet",
     body:`<p>Energy data needs a free EPC token and a small server to call it. Once connected, this shows the property's EPC band, its potential band and estimated running costs.</p>${src}`};
   if(!(all.certificates||[]).length) return {id:"energy",name:"Energy costs",status:"warn",value:"No certificate found",
@@ -344,16 +345,17 @@ function topicEnergy(R){
     ? `<div class="field"><label for="epcPick">Which property?</label><select id="epcPick">${all.certificates.map((c,i)=>`<option value="${i}"${i===epcIndex?" selected":""}>${esc(c.address)}</option>`).join("")}</select></div>`
     : `<p class="small">${esc(e.address)}</p>`;
   const ladder = EPC_BANDS.map(([b,lo,hi],i)=>{
-    const marks = [e.band===b?`<b>${e.score}</b> current`:"", e.potentialBand===b?`<b>${e.potentialScore}</b> potential`:""].filter(Boolean).join(" ");
+    const marks = [e.band===b?(e.score?`<b>${e.score}</b> current`:"<b>&#9664;</b> current band"):"", (e.potentialScore && e.potentialBand===b)?`<b>${e.potentialScore}</b> potential`:""].filter(Boolean).join(" ");
     return `<li><span class="fill" style="width:${34+i*9}%;background:var(--epc-${b.toLowerCase()})"><span>${lo}–${hi}</span><span>${b}</span></span><span class="mark">${marks}</span></li>`;
   }).join("");
   const diff = e.estAnnual - e.estAnnualPotential;
-  return {id:"energy",name:"Energy costs",status,value:`EPC band ${e.band}, about ${gbp(e.estAnnual)} a year`,
+  const hasCosts = e.estAnnual > 0;
+  return {id:"energy",name:"Energy costs",status,value: hasCosts ? `EPC band ${e.band}, about ${gbp(e.estAnnual)} a year` : `EPC band ${e.band}`,
     body:`${picker}
-      <div class="figure"><span class="big num">${gbp(e.estAnnual)}</span><span>estimated heating, hot water and lighting a year</span></div>
-      ${diff>0?`<p>The certificate's recommended upgrades would bring this to about ${gbp(e.estAnnualPotential)}, a saving of ${gbp(diff)} a year.</p>`:""}
-      <ol class="epc" aria-label="EPC rating: current ${e.score} (band ${e.band}), potential ${e.potentialScore} (band ${e.potentialBand})">${ladder}</ol>
-      <p class="small">${esc(e.floorArea)} m², ${esc(e.heating).toLowerCase()}. Certificate lodged ${fmtDate(e.lodged)}. EPCs last 10 years, so an older one may not reflect recent work.</p>${src}`};
+      ${hasCosts?`<div class="figure"><span class="big num">${gbp(e.estAnnual)}</span><span>estimated heating, hot water and lighting a year</span></div>`:`<div class="figure"><span class="big">Band ${esc(e.band)}</span><span>current energy rating</span></div>`}
+      ${hasCosts&&diff>0?`<p>The certificate's recommended upgrades would bring this to about ${gbp(e.estAnnualPotential)}, a saving of ${gbp(diff)} a year.</p>`:""}
+      <ol class="epc" aria-label="EPC rating: band ${e.band}${e.score?` (score ${e.score})`:""}${e.potentialScore?`, potential ${e.potentialScore} (band ${e.potentialBand})`:""}">${ladder}</ol>
+      <p class="small">${[e.floorArea?`${esc(e.floorArea)} m²`:"", e.heating?esc(e.heating).toLowerCase():""].filter(Boolean).join(", ")}${e.floorArea||e.heating?". ":""}Certificate lodged ${fmtDate(e.lodged)}. EPCs last 10 years, so an older one may not reflect recent work.</p>${src}`};
 }
 
 function failedTopic(id,name,src){
