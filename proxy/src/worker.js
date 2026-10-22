@@ -57,14 +57,17 @@ async function epc(url, env, ctx, cors) {
   const hit = await cache.match(cacheKey);
   if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...cors } });
 
-  const upstream = env.EPC_SEARCH_URL.replace("{postcode}", encodeURIComponent(postcode));
+  // The API documents postcodes as "LS1+4AP", so encode the space as a plus.
+  const upstream = env.EPC_SEARCH_URL.replace("{postcode}", encodeURIComponent(postcode).replace(/%20/g, "+"));
   const res = await fetch(upstream, {
     headers: { Authorization: "Bearer " + env.EPC_TOKEN, Accept: "application/json" }
   });
+  // 404 means no certificates match this postcode: an answer, not a failure.
+  if (res.status === 404) return json({ certificates: [] }, 200, cors, { "Cache-Control": "public, max-age=86400" });
   if (!res.ok) throw new Error("EPC API returned " + res.status);
   const raw = await res.json();
 
-  const rows = raw.rows || raw.data || raw.results || raw.certificates || (Array.isArray(raw) ? raw : []);
+  const rows = Array.isArray(raw.data) ? raw.data : raw.rows || raw.results || raw.certificates || (Array.isArray(raw) ? raw : []);
   const latest = new Map();
   for (const r of rows) {
     const c = normaliseCertificate(r);
@@ -88,12 +91,14 @@ function pick(r, ...keys) {
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 
 function normaliseCertificate(r) {
-  const address = [pick(r, "address1", "addressLine1"), pick(r, "address2", "addressLine2"), pick(r, "address3", "addressLine3")]
-    .filter(Boolean).join(", ") || pick(r, "address", "fullAddress") || "";
+  const titleCase = s => String(s).toLowerCase().replace(/\b([a-z])/g, m => m.toUpperCase());
+  const address = titleCase([pick(r, "address1", "addressLine1"), pick(r, "address2", "addressLine2"), pick(r, "address3", "addressLine3"), pick(r, "addressLine4")]
+    .filter(Boolean).join(", ") || pick(r, "address", "fullAddress") || "");
   const cost = (...k) => num(pick(r, ...k));
   return {
     address,
-    band: pick(r, "current-energy-rating", "currentEnergyRating"),
+    certificateNumber: pick(r, "certificateNumber", "lmk-key") || "",
+    band: pick(r, "current-energy-rating", "currentEnergyRating", "currentEnergyEfficiencyBand"),
     score: num(pick(r, "current-energy-efficiency", "currentEnergyEfficiency")),
     potentialBand: pick(r, "potential-energy-rating", "potentialEnergyRating"),
     potentialScore: num(pick(r, "potential-energy-efficiency", "potentialEnergyEfficiency")),
