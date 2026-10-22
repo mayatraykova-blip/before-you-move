@@ -6,7 +6,7 @@ Buying or renting? Understand the area, spot potential concerns and get a checkl
 
 Before you move takes a London postcode and returns one report built from six public data sources: energy performance, crime, flood risk, planning restrictions, sold prices and the 8am commute. It has two routes. Renters get a checklist for before they pay a holding deposit. Buyers get one for before they make an offer.
 
-**Status:** prototype. The page runs end to end on sample data. The live API calls are written but not yet tested against the real services.
+**Status:** live at [mayatraykova-blip.github.io/before-you-move](https://mayatraykova-blip.github.io/before-you-move). Five of six data sources run live in the browser: postcodes.io, Police.uk, TfL, HM Land Registry and planning.data.gov.uk. I tested planning data against N1 1RA, which correctly returns the Upper Street (North) conservation area. EPC data waits on the proxy.
 
 ---
 
@@ -86,8 +86,8 @@ Never commit tokens. `.dev.vars` is git-ignored for local testing.
 
 ## What's next
 
-1. **Test the live calls.** Land Registry SPARQL and the planning.data.gov.uk point lookup are the most likely to need fixes.
-2. **Confirm the EPC endpoint and field names.** The proxy reads both the old and new field formats, but I haven't seen a live response from the new service yet.
+1. **Deploy the proxy and connect EPC.** The proxy reads both the old and new EPC field formats, but I haven't seen a live response from the new service yet.
+2. **Handle failures visibly.** Done: if a source doesn't respond, its row says so instead of showing an empty result.
 3. **Interview 10 renters.** The secondary data shows the market pressure and the cost of a bad pick. It doesn't show that renters would use a checker before signing. That is the riskiest assumption.
 4. **Landlord licensing by street.** Each borough publishes its selective licensing areas differently. Mapping them would let the renter card answer directly instead of pointing to the council.
 5. **Surface water flood risk.** It is the more common flood risk in London and is not in the data the page uses today.
