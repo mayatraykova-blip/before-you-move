@@ -1,0 +1,532 @@
+<title>Before you move</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Check a London postcode before you rent or buy. Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,500;112,700;125,800&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: one left-aligned reading column (max 42rem). The result opens on a London street-name plate for the postcode;
+   below it, a checklist first, then one expandable row per topic so the summary and the evidence share one place. */
+:root{
+  --paper:#F5F6F7; --surface:#FFFFFF; --ink:#1B2430; --ink-2:#4A5563; --rule:#D3D9E0; --rule-strong:#A9B2BD;
+  --accent:#1E4FB8; --accent-soft:#E6EDFB; --on-ink:#FFFFFF;
+  --good:#17693F; --good-soft:#E2F1E8; --warn:#7E5200; --warn-soft:#FAF0D9; --bad:#AE2318; --bad-soft:#FBE4E1; --info:#4A5563; --info-soft:#ECEFF2;
+  --plate:#FFFFFF; --plate-ink:#111418; --plate-red:#C8102E;
+  --display:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body:"Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --epc-a:#008054; --epc-b:#19B459; --epc-c:#8DCE46; --epc-d:#FFD500; --epc-e:#FCAA65; --epc-f:#EF8023; --epc-g:#E9153B;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11161C; --surface:#19202A; --ink:#EDF1F5; --ink-2:#AAB4C0; --rule:#2C3541; --rule-strong:#4A5563;
+  --accent:#93B2FF; --accent-soft:#1E2A44; --on-ink:#11161C;
+  --good:#71CF9C; --good-soft:#15301F; --warn:#F2BC5A; --warn-soft:#33270F; --bad:#FF9489; --bad-soft:#3B1D1A; --info:#AAB4C0; --info-soft:#222B36;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11161C; --surface:#19202A; --ink:#EDF1F5; --ink-2:#AAB4C0; --rule:#2C3541; --rule-strong:#4A5563;
+  --accent:#93B2FF; --accent-soft:#1E2A44; --on-ink:#11161C;
+  --good:#71CF9C; --good-soft:#15301F; --warn:#F2BC5A; --warn-soft:#33270F; --bad:#FF9489; --bad-soft:#3B1D1A; --info:#AAB4C0; --info-soft:#222B36;
+  color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:42rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:flex;flex-direction:column;gap:32px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1;letter-spacing:-.01em}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:.18em}
+.skip{position:absolute;left:-9999px;top:0}
+.skip:focus{left:max(16px,env(safe-area-inset-left,0px));top:calc(8px + env(safe-area-inset-top,0px));z-index:20;background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:8px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Masthead */
+.mast{display:flex;flex-direction:column;gap:10px}
+.mast h1{font-size:clamp(2.6rem,10vw,4.2rem);font-weight:800;font-stretch:125%;letter-spacing:-.025em;line-height:.95}
+.mast .tagline{font-family:var(--display);font-stretch:112%;font-weight:700;font-size:clamp(1.2rem,4.4vw,1.5rem);line-height:1.25}
+.mast .lede{color:var(--ink-2);max-width:36rem}
+
+/* Form */
+form{display:flex;flex-direction:column;gap:20px;background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:20px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-weight:700;margin-bottom:10px;padding:0}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice input{position:absolute;opacity:0;width:1px;height:1px}
+.choice label{display:flex;flex-direction:column;gap:2px;min-height:64px;padding:12px 14px;border:2px solid var(--rule);border-radius:var(--r);cursor:pointer;background:var(--paper);transition:border-color .15s}
+.choice label strong{font-family:var(--display);font-stretch:112%;font-size:1.1rem}
+.choice label span{font-size:.9rem;color:var(--ink-2)}
+.choice input:checked + label{border-color:var(--ink);background:var(--surface);box-shadow:inset 0 0 0 1px var(--ink)}
+.choice input:focus-visible + label{outline:3px solid var(--accent);outline-offset:3px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.fields{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-weight:700}
+.hint{font-size:.9rem;color:var(--ink-2)}
+input[type=text],select{font:600 1.125rem/1.2 var(--body);padding:12px 14px;min-height:48px;border:2px solid var(--rule-strong);border-radius:10px;background:var(--surface);color:var(--ink);width:100%}
+input[type=text]{text-transform:uppercase;letter-spacing:.04em}
+select{font-size:1rem;font-weight:400}
+input[aria-invalid="true"]{border-color:var(--bad)}
+.err{display:flex;gap:8px;align-items:flex-start;color:var(--bad);font-weight:600}
+.btn{font:700 1.0625rem var(--body);min-height:52px;padding:0 24px;border-radius:10px;border:0;background:var(--ink);color:var(--on-ink);cursor:pointer;justify-self:start;display:inline-flex;align-items:center;gap:10px}
+.btn:hover{background:var(--accent);color:var(--on-ink)}
+.btn[aria-busy="true"]{opacity:.75;cursor:progress}
+
+.note{border-left:4px solid var(--warn);background:var(--warn-soft);padding:12px 16px;border-radius:0 10px 10px 0;font-size:.95rem}
+.note strong{display:block}
+
+/* Street plate: the one bold object */
+.plate{background:var(--plate);color:var(--plate-ink);border:3px solid var(--plate-ink);border-radius:10px;padding:5px;box-shadow:0 1px 0 rgba(0,0,0,.08), 0 10px 24px -14px rgba(17,20,24,.45);max-width:100%;align-self:flex-start}
+.plate-in{border:2px solid var(--plate-ink);border-radius:6px;padding:10px 20px 12px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.plate-borough{font-family:var(--display);font-stretch:100%;font-weight:500;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.plate-name{font-family:var(--display);font-stretch:112%;font-weight:700;font-size:clamp(1.5rem,6.5vw,2.25rem);letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
+.plate-pc{font-family:var(--display);font-stretch:112%;font-weight:700;font-size:clamp(1.05rem,4.5vw,1.4rem);letter-spacing:.06em;color:var(--plate-red)}
+.result-head{display:flex;flex-direction:column;gap:14px}
+.result-head p{color:var(--ink-2)}
+
+/* Sections */
+.section{display:flex;flex-direction:column;gap:14px}
+.section > h2{font-size:1.45rem;font-stretch:112%;font-weight:700}
+.tally{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--ink-2);font-size:.95rem}
+.tally b{color:var(--ink)}
+
+/* Checklist */
+.checklist{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--rule);border-radius:16px}
+.checklist li + li{border-top:1px solid var(--rule)}
+.checklist label{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;cursor:pointer;min-height:48px}
+.checklist input{appearance:none;-webkit-appearance:none;flex:0 0 auto;width:24px;height:24px;margin:1px 0 0;border:2px solid var(--rule-strong);border-radius:6px;background:var(--surface);display:grid;place-content:center;cursor:pointer}
+.checklist input::after{content:"";width:12px;height:7px;border:3px solid var(--on-ink);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+.checklist input:checked{background:var(--ink);border-color:var(--ink)}
+.checklist input:checked::after{opacity:1}
+.checklist input:checked ~ span{color:var(--ink-2);text-decoration:line-through;text-decoration-thickness:1px}
+.progress{font-size:.95rem;color:var(--ink-2)}
+
+/* Topic rows */
+.topics{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--rule);border-radius:16px;overflow:hidden}
+.topic + .topic{border-top:1px solid var(--rule)}
+.topic summary{list-style:none;display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center;padding:16px;cursor:pointer;min-height:64px}
+.topic summary::-webkit-details-marker{display:none}
+.topic summary:hover{background:var(--paper)}
+.topic .t-name{font-weight:700}
+.topic .t-val{grid-column:2;color:var(--ink-2);font-size:.95rem}
+.topic .chev{grid-row:1/span 2;grid-column:3;width:20px;height:20px;color:var(--ink-2);transition:transform .2s}
+.topic[open] .chev{transform:rotate(180deg)}
+.status{grid-row:1/span 2;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%}
+.status svg{width:20px;height:20px}
+.s-good{color:var(--good);background:var(--good-soft)} .s-warn{color:var(--warn);background:var(--warn-soft)} .s-bad{color:var(--bad);background:var(--bad-soft)} .s-info{color:var(--info);background:var(--info-soft)}
+.s-word{font-size:.8rem;font-weight:700;padding:2px 8px;border-radius:999px;justify-self:start;grid-column:2}
+.t-body{padding:4px 16px 20px 66px;display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (max-width:480px){.t-body{padding-left:16px}}
+.big{font-family:var(--display);font-stretch:112%;font-weight:800;font-size:2rem;line-height:1}
+.figure{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.figure span{color:var(--ink-2)}
+.small{font-size:.92rem;color:var(--ink-2)}
+.src{font-size:.85rem;color:var(--ink-2)}
+.src a{color:inherit}
+.sample-tag{font-size:.8rem;font-weight:700;color:var(--warn);background:var(--warn-soft);padding:1px 8px;border-radius:999px;margin-left:6px;white-space:nowrap}
+
+/* EPC ladder, as on the certificate */
+.epc{display:flex;flex-direction:column;gap:3px;margin:0;padding:0;list-style:none}
+.epc li{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.85rem}
+.epc .fill{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;color:#111;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}
+.epc .fill span:first-child{font-weight:400}
+.epc .mark{font-size:.85rem;white-space:nowrap}
+.epc .mark b{display:inline-block;min-width:2.2em;padding:1px 6px;border-radius:4px;background:var(--ink);color:var(--on-ink);text-align:center}
+
+.bars{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.bars li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:.95rem}
+.bars .track{grid-column:1/-1;height:8px;background:var(--paper);border-radius:4px;overflow:hidden}
+.bars .track i{display:block;height:100%;background:var(--ink-2);border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+
+.tablebox{overflow-x:auto;margin:0 -4px}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+caption{text-align:left;font-size:.9rem;color:var(--ink-2);padding-bottom:6px}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:.85rem;color:var(--ink-2);font-weight:700}
+.r{text-align:right}
+ul.plain{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+
+footer{font-size:.88rem;color:var(--ink-2);display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--rule);padding-top:20px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:no-preference){.plate.enter{animation:hang .5s cubic-bezier(.2,.9,.3,1.2) both}@keyframes hang{from{transform:translateY(-8px) rotate(-1.5deg)}to{transform:none}}}
+</style>
+
+<a class="skip" href="#report">Skip to report</a>
+<div class="wrap">
+  <header class="mast">
+    <h1>Before you move</h1>
+    <p class="tagline">Check the postcode. Know what to ask.</p>
+    <p class="lede">Buying or renting? Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.</p>
+  </header>
+
+  <form id="checkForm" novalidate aria-describedby="formErr">
+    <fieldset>
+      <legend>Are you renting or buying?</legend>
+      <div class="choice">
+        <input type="radio" name="route" id="routeRent" value="rent" checked>
+        <label for="routeRent"><strong>Renting</strong><span>Before the holding deposit</span></label>
+        <input type="radio" name="route" id="routeBuy" value="buy">
+        <label for="routeBuy"><strong>Buying</strong><span>Before you make an offer</span></label>
+      </div>
+    </fieldset>
+    <div class="fields">
+      <div class="field">
+        <label for="pc">Property postcode</label>
+        <input type="text" id="pc" value="N16 0AS" maxlength="8" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" aria-describedby="pcHint">
+        <span class="hint" id="pcHint">Any London postcode</span>
+      </div>
+      <div class="field">
+        <label for="dest">Where you travel to</label>
+        <input type="text" id="dest" value="EC2R 8AH" maxlength="8" autocapitalize="characters" spellcheck="false" aria-describedby="destHint">
+        <span class="hint" id="destHint">Work or study postcode</span>
+      </div>
+    </div>
+    <div class="err" id="formErr" role="alert" hidden></div>
+    <button class="btn" id="goBtn" type="submit">Check postcode</button>
+  </form>
+
+  <p class="note" id="demoBanner" hidden><strong>You're viewing a sample report.</strong> This preview can't connect to the data sources, so it shows illustrative figures for an example N16 postcode. The published version fetches live data for any London postcode.</p>
+
+  <main id="report" tabindex="-1" aria-live="polite" style="display:flex;flex-direction:column;gap:32px;outline:none"></main>
+
+  <footer>
+    <p>Contains public sector information licensed under the Open Government Licence v3.0. Data from HM Land Registry, the Environment Agency, Police.uk, postcodes.io, planning.data.gov.uk and the EPC register. Powered by TfL Open Data. Contains OS data © Crown copyright and database right.</p>
+    <p>This report is guidance, not a survey or legal advice. Check anything that matters to your decision with the agent, landlord or your solicitor.</p>
+  </footer>
+</div>
+
+<script>
+document.documentElement.lang = "en-GB";
+/* ---------- config: in the repo these come from env via the proxy ---------- */
+const CONFIG = {
+  PROXY_BASE: "",      // e.g. "https://before-you-sign.yourname.workers.dev" holds EPC + TfL keys
+  TFL_APP_KEY: ""      // optional; raises TfL rate limits. Keep in the proxy, not here, once deployed.
+};
+
+/* ---------- state ---------- */
+let route = "rent";
+let demo = false;
+let lastReport = null;
+let epcIndex = 0;
+const epcSel = R => (R.epc && R.epc.certificates && R.epc.certificates[epcIndex]) || null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const gbp = n => "£" + Math.round(n).toLocaleString("en-GB");
+const normPc = s => s.toUpperCase().replace(/\s+/g,"").replace(/^(.+)(\d[A-Z]{2})$/,"$1 $2");
+
+/* ---------- API layer (live) ---------- */
+async function getJSON(url, opts){ const r = await fetch(url, opts); if(!r.ok) throw new Error(r.status + " " + url); return r.json(); }
+
+async function livePostcode(pc){
+  const j = await getJSON("https://api.postcodes.io/postcodes/" + encodeURIComponent(pc));
+  const r = j.result;
+  return { postcode:r.postcode, lat:r.latitude, lng:r.longitude, borough:r.admin_district, ward:r.admin_ward, inLondon: r.region === "London" };
+}
+async function liveCrime(lat,lng){
+  const rows = await getJSON(`https://data.police.uk/api/crimes-street/all-crime?lat=${lat}&lng=${lng}`);
+  const by = {}; rows.forEach(c => by[c.category] = (by[c.category]||0)+1);
+  return { month: rows[0]?.month || null, total: rows.length, by };
+}
+async function liveFloodWarnings(lat,lng){
+  const j = await getJSON(`https://environment.data.gov.uk/flood-monitoring/id/floods?lat=${lat}&long=${lng}&dist=3`);
+  return (j.items||[]).map(i => ({ severity:i.severity, level:i.severityLevel, area:i.description }));
+}
+async function livePlanningDesignations(lat,lng){
+  const ds = ["conservation-area","flood-risk-zone","listed-building-outline","article-4-direction-area","tree-preservation-zone"];
+  const q = ds.map(d=>"dataset="+d).join("&");
+  const j = await getJSON(`https://www.planning.data.gov.uk/entity.json?latitude=${lat}&longitude=${lng}&${q}&limit=50`);
+  return (j.entities||[]).map(e => ({ dataset:e.dataset, name:e.name || e.reference, level:e["flood-risk-level"] }));
+}
+async function livePrices(pc){
+  const sparql = `PREFIX lrppi: <http://landregistry.data.gov.uk/def/ppi/>
+PREFIX lrcommon: <http://landregistry.data.gov.uk/def/common/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+SELECT ?amount ?date ?paon ?saon ?street ?ptype WHERE {
+  ?addr lrcommon:postcode "${pc}" .
+  ?tx lrppi:propertyAddress ?addr ; lrppi:pricePaid ?amount ; lrppi:transactionDate ?date ; lrppi:propertyType ?pt .
+  ?pt skos:prefLabel ?ptype .
+  OPTIONAL { ?addr lrcommon:paon ?paon } OPTIONAL { ?addr lrcommon:saon ?saon } OPTIONAL { ?addr lrcommon:street ?street }
+} ORDER BY DESC(?date) LIMIT 25`;
+  const j = await getJSON("https://landregistry.data.gov.uk/landregistry/query?output=json&query=" + encodeURIComponent(sparql));
+  return j.results.bindings.map(b => ({
+    price:+b.amount.value, date:b.date.value.slice(0,10),
+    address:[b.saon?.value,b.paon?.value,b.street?.value].filter(Boolean).join(", "),
+    type:b.ptype.value
+  }));
+}
+function nextWeekday(){ const d = new Date(); do { d.setDate(d.getDate()+1); } while([0,6].includes(d.getDay())); return d.toISOString().slice(0,10).replace(/-/g,""); }
+async function liveCommute(lat,lng,dest){
+  const path = `/Journey/JourneyResults/${lat},${lng}/to/${encodeURIComponent(dest.replace(/\s/g,""))}?date=${nextWeekday()}&time=0800&timeIs=Departing`;
+  // With the proxy deployed, the TfL key stays server-side. Without it, TfL still answers at a lower rate limit.
+  const url = CONFIG.PROXY_BASE ? CONFIG.PROXY_BASE + "/tfl" + path : "https://api.tfl.gov.uk" + path + (CONFIG.TFL_APP_KEY ? "&app_key="+CONFIG.TFL_APP_KEY : "");
+  const j = await getJSON(url);
+  const js = (j.journeys||[]).map(x => ({ mins:x.duration, legs:x.legs.map(l=>l.routeOptions?.[0]?.name || l.mode?.name).filter(Boolean) }));
+  js.sort((a,b)=>a.mins-b.mins);
+  return js.slice(0,3);
+}
+async function liveEPC(pc){
+  if(!CONFIG.PROXY_BASE) return { notConnected:true };
+  return getJSON(CONFIG.PROXY_BASE + "/epc?postcode=" + encodeURIComponent(pc));
+}
+
+/* ---------- sample report (illustrative, used when live calls are blocked) ---------- */
+const SAMPLE = {
+  place:{ postcode:"N16 0AS", borough:"Hackney", ward:"Stoke Newington", lat:51.562065, lng:-0.078175, inLondon:true },
+  crime:{ month:"2026-08", total:412, by:{"anti-social-behaviour":118,"violent-crime":96,"other-theft":44,"vehicle-crime":37,"bicycle-theft":31,"burglary":24,"public-order":22,"shoplifting":18,"criminal-damage-arson":14,"other":8} },
+  flood:[],
+  designations:[ {dataset:"conservation-area",name:"Stoke Newington Church Street"}, {dataset:"article-4-direction-area",name:"Hackney basements and front gardens"} ],
+  prices:[
+    {price:612000,date:"2025-11-14",address:"Flat 2, 41, Example Road",type:"Flat-maisonette"},
+    {price:575000,date:"2024-06-28",address:"Flat 1, 43, Example Road",type:"Flat-maisonette"},
+    {price:1385000,date:"2023-09-01",address:"37, Example Road",type:"Terraced"},
+    {price:540000,date:"2021-03-19",address:"Flat 3, 41, Example Road",type:"Flat-maisonette"},
+    {price:1210000,date:"2019-07-12",address:"45, Example Road",type:"Terraced"}
+  ],
+  commute:[ {mins:31,legs:["73","Northern line"]}, {mins:34,legs:["Overground","Central line"]}, {mins:38,legs:["243"]} ],
+  epc:{ certificates:[
+    { address:"Flat 2, 41 Example Road", band:"E", score:47, potentialBand:"C", potentialScore:72, lodged:"2019-04-02", floorArea:58, heating:"Boiler and radiators, mains gas", estAnnual:1680, estAnnualPotential:1090 },
+    { address:"Flat 1, 43 Example Road", band:"C", score:71, potentialBand:"B", potentialScore:83, lodged:"2023-02-17", floorArea:64, heating:"Boiler and radiators, mains gas", estAnnual:980, estAnnualPotential:820 }
+  ] }
+};
+
+
+
+/* ---------- interpretation ---------- */
+const CRIME_LABEL = {"anti-social-behaviour":"Anti-social behaviour","violent-crime":"Violence and sexual offences","other-theft":"Other theft","vehicle-crime":"Vehicle crime","bicycle-theft":"Bicycle theft","burglary":"Burglary","public-order":"Public order","shoplifting":"Shoplifting","criminal-damage-arson":"Criminal damage and arson","theft-from-the-person":"Theft from the person","robbery":"Robbery","drugs":"Drugs","possession-of-weapons":"Possession of weapons","other-crime":"Other crime","other":"Other"};
+const DS_LABEL = {"conservation-area":"Conservation area","flood-risk-zone":"Flood risk zone","listed-building-outline":"Listed building","article-4-direction-area":"Article 4 direction","tree-preservation-zone":"Tree preservation zone"};
+const EPC_BANDS = [["A",92,100],["B",81,91],["C",69,80],["D",55,68],["E",39,54],["F",21,38],["G",1,20]];
+const STATUS = {
+  good:{ word:"Looks fine", icon:'<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' },
+  warn:{ word:"Worth checking", icon:'<path d="M12 7v6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17" r="1.6" fill="currentColor"/>' },
+  bad: { word:"Potential concern", icon:'<path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>' },
+  info:{ word:"For context", icon:'<path d="M12 11v6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.6" fill="currentColor"/>' }
+};
+const hasDs = (R,d) => R.designations.some(x=>x.dataset===d);
+const floodZone = R => { const fz = R.designations.filter(d=>d.dataset==="flood-risk-zone"); return fz.length ? Math.max(...fz.map(d=>+String(d.level||d.name).replace(/\D/g,"")||2)) : 1; };
+
+function questions(R){
+  const q = [];
+  const e = epcSel(R);
+  if(route==="rent"){
+    if(e && "EFG".includes(e.band)) q.push(`The EPC is band ${e.band}. What were the last tenant's winter energy bills, and is the landlord planning upgrades?`);
+    if(e && "FG".includes(e.band)) q.push("Band F and G homes can't legally be let in England without a registered exemption. Can I see the exemption?");
+    if(!e) q.push("What is the EPC certificate number? Check it on the government register before you pay a holding deposit.");
+    q.push(`Does the property need a ${esc(R.place.borough)} property licence, and can I see it?`);
+    q.push("Which deposit protection scheme will hold my deposit?");
+    if(R.flood.length || floodZone(R)>1) q.push("Has the property flooded before? Check your contents insurance covers flood.");
+    const asb = R.crime.by["anti-social-behaviour"]||0; if(asb > R.crime.total*0.25) q.push("Anti-social behaviour is the largest category nearby. Visit after dark before you commit.");
+    q.push("Visit at rush hour and after dark to hear traffic, neighbours and street noise.");
+  } else {
+    if(hasDs(R,"conservation-area")) q.push("It's in a conservation area. Extensions, windows and roof changes need planning consent. Check before pricing in a loft or rear extension.");
+    if(hasDs(R,"article-4-direction-area")) q.push("An Article 4 direction removes some permitted development rights here. Ask your solicitor which works it covers.");
+    if(hasDs(R,"listed-building-outline")) q.push("A listed building sits on or next to this site. Works need listed building consent, and repairs cost more.");
+    if(e && "DEFG".includes(e.band)) q.push(`The EPC is band ${e.band}. Budget for insulation or heating upgrades, and ask your lender whether rates are better above band C.`);
+    if(R.flood.length || floodZone(R)>1) q.push("Get a buildings insurance quote before your offer. Flood zones can raise premiums.");
+    q.push("If it's leasehold, ask for the lease length, ground rent and the last three years of service charges.");
+    q.push("Compare the asking price with recent sales on this postcode.");
+  }
+  return q;
+}
+
+/* ---------- topic builders: each returns {id,name,status,value,body} ---------- */
+const sampleTag = () => demo ? '<span class="sample-tag">Sample</span>' : "";
+
+function topicEnergy(R){
+  const all = R.epc;
+  const src = '<p class="src">Source: EPC register (MHCLG)</p>';
+  if(all.notConnected) return {id:"energy",name:"Energy costs",status:"info",value:"Not connected yet",
+    body:`<p>Energy data needs a free EPC token and a small server to call it. Once connected, this shows the property's EPC band, its potential band and estimated running costs.</p>${src}`};
+  if(!(all.certificates||[]).length) return {id:"energy",name:"Energy costs",status:"warn",value:"No certificate found",
+    body:`<p>No EPC is registered on this postcode. Rented and sold homes in England need one, so ask for it.</p>${src}`};
+  const e = epcSel(R) || all.certificates[0];
+  const status = "ABC".includes(e.band) ? "good" : "EFG".includes(e.band) ? "bad" : "warn";
+  const picker = all.certificates.length > 1
+    ? `<div class="field"><label for="epcPick">Which property?</label><select id="epcPick">${all.certificates.map((c,i)=>`<option value="${i}"${i===epcIndex?" selected":""}>${esc(c.address)}</option>`).join("")}</select></div>`
+    : `<p class="small">${esc(e.address)}</p>`;
+  const ladder = EPC_BANDS.map(([b,lo,hi],i)=>{
+    const marks = [e.band===b?`<b>${e.score}</b> current`:"", e.potentialBand===b?`<b>${e.potentialScore}</b> potential`:""].filter(Boolean).join(" ");
+    return `<li><span class="fill" style="width:${34+i*9}%;background:var(--epc-${b.toLowerCase()})"><span>${lo}–${hi}</span><span>${b}</span></span><span class="mark">${marks}</span></li>`;
+  }).join("");
+  const diff = e.estAnnual - e.estAnnualPotential;
+  return {id:"energy",name:"Energy costs",status,value:`EPC band ${e.band}, about ${gbp(e.estAnnual)} a year`,
+    body:`${picker}
+      <div class="figure"><span class="big num">${gbp(e.estAnnual)}</span><span>estimated heating, hot water and lighting a year</span></div>
+      ${diff>0?`<p>The certificate's recommended upgrades would bring this to about ${gbp(e.estAnnualPotential)}, a saving of ${gbp(diff)} a year.</p>`:""}
+      <ol class="epc" aria-label="EPC rating: current ${e.score} (band ${e.band}), potential ${e.potentialScore} (band ${e.potentialBand})">${ladder}</ol>
+      <p class="small">${esc(e.floorArea)} m², ${esc(e.heating).toLowerCase()}. Certificate lodged ${fmtDate(e.lodged)}. EPCs last 10 years, so an older one may not reflect recent work.</p>${src}`};
+}
+
+function topicFlood(R){
+  const z = floodZone(R), warn = R.flood;
+  const status = warn.length || z>=3 ? "bad" : z===2 ? "warn" : "good";
+  const value = warn.length ? `${warn.length} active flood ${warn.length>1?"warnings":"warning"} nearby` : z>1 ? `Flood zone ${z} (rivers and sea)` : "Zone 1, low risk from rivers and sea";
+  return {id:"flood",name:"Flood risk",status,value,
+    body:`${warn.length?`<ul class="plain">${warn.map(w=>`<li><b>${esc(w.severity)}:</b> ${esc(w.area)}</li>`).join("")}</ul>`:"<p>No flood alerts or warnings within 3 km right now.</p>"}
+      <p>${z>1?`The site is in Environment Agency flood zone ${z}.`:"The site isn't in a river or sea flood zone."}</p>
+      <p class="small">In London, surface water from heavy rain is the more common risk and is mapped separately. <a href="https://check-long-term-flood-risk.service.gov.uk" target="_blank" rel="noopener">Check surface water risk<span class="vh"> (opens in a new tab)</span></a></p>
+      <p class="src">Sources: Environment Agency, planning.data.gov.uk</p>`};
+}
+
+function topicCrime(R){
+  const c = R.crime;
+  const entries = Object.entries(c.by).sort((a,b)=>b[1]-a[1]);
+  const max = entries[0]?.[1]||1;
+  const month = c.month ? new Date(c.month+"-01").toLocaleDateString("en-GB",{month:"long",year:"numeric"}) : "the latest month";
+  const top = entries[0] ? (CRIME_LABEL[entries[0][0]]||entries[0][0]).toLowerCase() : "";
+  return {id:"crime",name:"Crime nearby",status:"info",value:`${c.total} reports within about a mile${top?`, mostly ${top}`:""}`,
+    body:`<div class="figure"><span class="big num">${c.total}</span><span>crimes reported within about a mile in ${month}</span></div>
+      <ul class="bars">${entries.slice(0,6).map(([k,n])=>`<li><span>${esc(CRIME_LABEL[k]||k)}</span><span class="num">${n}</span><span class="track" aria-hidden="true"><i style="width:${(n/max*100).toFixed(1)}%"></i></span></li>`).join("")}</ul>
+      <p class="small">Busy high streets and stations push totals up, so compare postcodes you're considering rather than reading this number on its own.</p>
+      <p class="src">Source: <a href="https://data.police.uk" target="_blank" rel="noopener">data.police.uk<span class="vh"> (opens in a new tab)</span></a></p>`};
+}
+
+function topicCommute(R, dest){
+  const js = R.commute;
+  if(!js.length) return {id:"commute",name:"Commute at 8am",status:"info",value:"No route found",body:`<p>TfL found no route to ${esc(dest)}. Check the postcode you travel to.</p>`};
+  const m = js[0].mins, status = m<=35?"good":m<=50?"warn":"bad";
+  return {id:"commute",name:"Commute at 8am",status,value:`${m} minutes to ${esc(dest)}`,
+    body:`<div class="tablebox"><table><caption>Fastest routes leaving at 8:00 on the next weekday</caption><thead><tr><th scope="col">Route</th><th scope="col" class="r">Minutes</th></tr></thead><tbody>${js.map(j=>`<tr><td>${esc(j.legs.join(", then ")||"Walk")}</td><td class="r num">${j.mins}</td></tr>`).join("")}</tbody></table></div>
+      <p class="src">Source: TfL Journey Planner</p>`};
+}
+
+function topicRestrictions(R){
+  const d = R.designations.filter(x=>x.dataset!=="flood-risk-zone");
+  const listed = hasDs(R,"listed-building-outline"), cons = hasDs(R,"conservation-area"), a4 = hasDs(R,"article-4-direction-area");
+  const status = listed ? "bad" : (cons||a4) ? "warn" : "good";
+  const value = d.length ? d.map(x=>DS_LABEL[x.dataset]).filter((v,i,a)=>a.indexOf(v)===i).join(", ") : "None found";
+  return {id:"restrictions",name:"Planning restrictions",status,value,
+    body:`${d.length?`<ul class="plain">${d.map(x=>`<li><b>${esc(DS_LABEL[x.dataset]||x.dataset)}:</b> ${esc(x.name)}</li>`).join("")}</ul>`:"<p>No conservation area, listed building, Article 4 direction or tree preservation zone covers this point.</p>"}
+      <p class="small">Coverage depends on what each borough has published. Your solicitor's local authority search is the definitive check.</p>
+      <p class="src">Source: <a href="https://www.planning.data.gov.uk" target="_blank" rel="noopener">planning.data.gov.uk<span class="vh"> (opens in a new tab)</span></a></p>`};
+}
+
+function topicPrices(R){
+  const p = R.prices;
+  const cutoff = String(new Date().getFullYear()-3);
+  const recent = p.filter(x=>x.date>=cutoff).length;
+  return {id:"prices",name:"Sold prices on this postcode",status:"info",value: p.length ? `${p.length} sales recorded, ${recent} in the last 3 years` : "No sales recorded",
+    body: p.length ? `<div class="tablebox"><table><caption>Most recent sales first</caption><thead><tr><th scope="col">Date</th><th scope="col">Address</th><th scope="col" class="r">Price</th></tr></thead><tbody>${p.slice(0,10).map(x=>`<tr><td class="num">${fmtDate(x.date)}</td><td>${esc(x.address)}<br><span class="small">${esc(x.type.replace("-"," or "))}</span></td><td class="r num">${gbp(x.price)}</td></tr>`).join("")}</tbody></table></div><p class="src">Source: HM Land Registry Price Paid Data</p>`
+      : `<p>No sales on this postcode are recorded since 1995.</p><p class="src">Source: HM Land Registry Price Paid Data</p>`};
+}
+
+function topicLicensing(R){
+  return {id:"licensing",name:"Landlord licensing",status:"warn",value:`Check with ${esc(R.place.borough)} council`,
+    body:`<p>Many London boroughs require private landlords to hold a licence. Tenants of an unlicensed landlord can apply to get rent paid back.</p>
+      <p>There's no single open dataset of licensed homes yet, so ask the agent for the licence and check ${esc(R.place.borough)} council's public register.</p>`};
+}
+
+function fmtDate(iso){ if(!iso) return ""; const d = new Date(iso); return isNaN(d) ? esc(iso) : d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
+
+/* ---------- render ---------- */
+let openTopics = new Set();
+function render(R, fresh){
+  lastReport = R;
+  const dest = normPc($("#dest").value);
+  const shared = [topicEnergy(R), topicFlood(R), topicCrime(R), topicCommute(R,dest)];
+  const topics = route==="rent" ? [...shared, topicLicensing(R)] : [topicRestrictions(R), topicPrices(R), ...shared];
+  const counts = {bad:0,warn:0,good:0}; topics.forEach(t=>{ if(counts[t.status]!==undefined) counts[t.status]++; });
+  const qs = questions(R);
+  const name = (R.place.ward || R.place.borough || "").replace(/&/g,"and");
+  $("#report").innerHTML = `
+    <section class="result-head" aria-labelledby="resultTitle">
+      <h2 class="vh" id="resultTitle">${route==="rent"?"Renter":"Buyer"} report for ${esc(R.place.postcode)}, ${esc(name)}</h2>
+      <div class="plate${fresh?" enter":""}" aria-hidden="true"><div class="plate-in">
+        <span class="plate-borough">London Borough of ${esc(R.place.borough)}</span>
+        <span class="plate-name">${esc(name)}</span>
+        <span class="plate-pc">${esc(R.place.postcode)}</span>
+      </div></div>
+      <p class="tally">${route==="rent"?"Renter report":"Buyer report"}${demo?'<span class="sample-tag">Sample data</span>':""}
+        <span><b>${counts.bad}</b> potential ${counts.bad===1?"concern":"concerns"}</span><span><b>${counts.warn}</b> worth checking</span><span><b>${counts.good}</b> looking fine</span></p>
+    </section>
+
+    <section class="section" aria-labelledby="askTitle">
+      <h2 id="askTitle">${route==="rent"?"Ask before you pay a holding deposit":"Ask before you make an offer"}</h2>
+      <ul class="checklist">${qs.map((q,i)=>`<li><label for="q${i}"><input type="checkbox" id="q${i}"><span>${q}</span></label></li>`).join("")}</ul>
+      <p class="progress" id="progress" aria-live="polite">0 of ${qs.length} checked</p>
+    </section>
+
+    <section class="section" aria-labelledby="areaTitle">
+      <h2 id="areaTitle">What the data shows</h2>
+      <div class="topics">${topics.map(t=>`
+        <details class="topic" id="t-${t.id}"${openTopics.has(t.id)?" open":""}>
+          <summary>
+            <span class="status s-${t.status}" aria-hidden="true"><svg viewBox="0 0 24 24">${STATUS[t.status].icon}</svg></span>
+            <span class="t-name">${t.name}</span>
+            <span class="t-val"><span class="vh">${STATUS[t.status].word}: </span>${t.value}</span>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="t-body"><span class="s-word s-${t.status}">${STATUS[t.status].word}</span>${t.body}</div>
+        </details>`).join("")}</div>
+    </section>`;
+}
+
+/* ---------- orchestration ---------- */
+async function runLive(pc, dest){
+  const place = await livePostcode(pc);
+  const settle = p => p.then(v=>({ok:true,v}), e=>({ok:false,e}));
+  const [crime, flood, des, prices, commute, epc] = await Promise.all([
+    settle(liveCrime(place.lat,place.lng)), settle(liveFloodWarnings(place.lat,place.lng)),
+    settle(livePlanningDesignations(place.lat,place.lng)), settle(livePrices(place.postcode)),
+    settle(liveCommute(place.lat,place.lng,dest)), settle(liveEPC(place.postcode))
+  ]);
+  return { place,
+    crime: crime.ok ? crime.v : {month:null,total:0,by:{}}, flood: flood.ok ? flood.v : [],
+    designations: des.ok ? des.v : [], prices: prices.ok ? prices.v : [],
+    commute: commute.ok ? commute.v : [], epc: epc.ok ? epc.v : {notConnected:true} };
+}
+
+function showError(msg, field){
+  const err = $("#formErr");
+  ["#pc","#dest"].forEach(s=>$(s).removeAttribute("aria-invalid"));
+  if(!msg){ err.hidden = true; err.textContent = ""; return; }
+  err.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style="flex:0 0 auto;margin-top:2px">${STATUS.warn.icon}</svg><span>${msg}</span>`;
+  err.hidden = false;
+  if(field){ $(field).setAttribute("aria-invalid","true"); $(field).focus(); }
+}
+
+const PC_RE = /^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/;
+async function check(focusReport){
+  const pc = normPc($("#pc").value), dest = normPc($("#dest").value);
+  showError("");
+  if(!PC_RE.test(pc)) return showError("Enter a full property postcode, for example N16 0AS.", "#pc");
+  if(!PC_RE.test(dest)) return showError("Enter the full postcode you travel to, for example EC2R 8AH.", "#dest");
+  $("#pc").value = pc; $("#dest").value = dest;
+  const btn = $("#goBtn"); btn.setAttribute("aria-busy","true"); btn.textContent = "Checking postcode…";
+  epcIndex = 0; openTopics = new Set();
+  try {
+    if(demo) throw new TypeError("demo");
+    const R = await runLive(pc, dest);
+    if(!R.place.inLondon) showError(`${pc} is outside London. This version covers London postcodes only.`);
+    render(R, true);
+  } catch(e){
+    if(e && e.name === "TypeError"){
+      demo = true; $("#demoBanner").hidden = false;
+      if(pc !== SAMPLE.place.postcode) showError(`Live checks for ${pc} aren't available in this preview, so the sample report is shown.`);
+      $("#pc").value = SAMPLE.place.postcode;
+      render(SAMPLE, true);
+    } else if(String(e.message).startsWith("404")) showError(`${pc} isn't a recognised postcode. Check it and try again.`, "#pc");
+    else showError("One of the data sources didn't respond. Try again in a minute.");
+  } finally {
+    btn.removeAttribute("aria-busy"); btn.textContent = "Check postcode";
+    if(focusReport && !$("#report").hidden && lastReport) $("#report").focus({preventScroll:false});
+  }
+}
+
+function setRoute(r){
+  route = r;
+  $(r==="buy"?"#routeBuy":"#routeRent").checked = true;
+  try { localStorage.setItem("bym-route", r); } catch(e){}
+  if(lastReport) render(lastReport, false);
+}
+try { const r = localStorage.getItem("bym-route"); if (r === "buy" || r === "rent") route = r; } catch(e){}
+document.querySelectorAll('input[name="route"]').forEach(el=>el.addEventListener("change", ()=>setRoute(el.value)));
+$("#checkForm").addEventListener("submit", e=>{ e.preventDefault(); check(true); });
+$("#report").addEventListener("change", e=>{
+  if(e.target.id==="epcPick"){ epcIndex = +e.target.value; openTopics.add("energy"); render(lastReport,false); $("#epcPick").focus(); }
+  if(e.target.matches('.checklist input')){ const all = document.querySelectorAll(".checklist input"); const n = [...all].filter(x=>x.checked).length; $("#progress").textContent = `${n} of ${all.length} checked`; }
+});
+$("#report").addEventListener("toggle", e=>{ const id = e.target.id?.replace("t-",""); if(!id) return; e.target.open ? openTopics.add(id) : openTopics.delete(id); }, true);
+
+setRoute(route);
+check(false);
+</script>

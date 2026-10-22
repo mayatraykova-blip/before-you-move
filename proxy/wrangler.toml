@@ -1,0 +1,14 @@
+name = "before-you-move-proxy"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Your GitHub Pages address. Comma-separate to allow more than one (e.g. a local test server).
+ALLOWED_ORIGIN = "https://mayatraykova-blip.github.io"
+# The EPC domestic search URL from the API documentation, with {postcode} where the postcode goes.
+# Leave empty until confirmed; the page then shows the "Needs EPC key" card.
+EPC_SEARCH_URL = ""
+
+# Secrets are not stored here. Set them with:
+#   npx wrangler secret put EPC_TOKEN
+#   npx wrangler secret put TFL_APP_KEY
