@@ -246,7 +246,7 @@ SELECT ?amount ?date ?paon ?saon ?street ?ptype WHERE {
   ?tx lrppi:propertyAddress ?addr ; lrppi:pricePaid ?amount ; lrppi:transactionDate ?date ; lrppi:propertyType ?pt .
   ?pt skos:prefLabel ?ptype .
   OPTIONAL { ?addr lrcommon:paon ?paon } OPTIONAL { ?addr lrcommon:saon ?saon } OPTIONAL { ?addr lrcommon:street ?street }
-} ORDER BY DESC(?date) LIMIT 25`;
+} ORDER BY DESC(?date) LIMIT 100`;
   const j = await getJSON("https://landregistry.data.gov.uk/landregistry/query?output=json&query=" + encodeURIComponent(sparql));
   return j.results.bindings.map(b => ({
     price:+b.amount.value, date:b.date.value.slice(0,10),
@@ -356,7 +356,16 @@ function topicEnergy(R){
       <p class="small">${esc(e.floorArea)} m², ${esc(e.heating).toLowerCase()}. Certificate lodged ${fmtDate(e.lodged)}. EPCs last 10 years, so an older one may not reflect recent work.</p>${src}`};
 }
 
+function failedTopic(id,name,src){
+  return {id,name,status:"info",value:"Couldn't load this data",
+    body:`<p>${src} didn't respond, so this section is missing. Try again in a minute. If it keeps failing, this source may not accept requests from the page.</p>`};
+}
+const failed = (R,k) => !!(R.failed && R.failed[k]);
+
 function topicFlood(R){
+  if(failed(R,"flood") && failed(R,"designations")) return failedTopic("flood","Flood risk","The Environment Agency and planning.data.gov.uk");
+  if(failed(R,"designations")) return {id:"flood",name:"Flood risk",status:"info",value: R.flood.length ? `${R.flood.length} active flood warning${R.flood.length>1?"s":""} nearby, zone unknown` : "No live warnings, flood zone couldn't load",
+    body:`<p>${R.flood.length?"There are active flood warnings within 3 km.":"There are no flood alerts or warnings within 3 km right now."}</p><p>The flood zone for this site couldn't load from planning.data.gov.uk, so this doesn't tell you whether the site is in zone 2 or 3. <a href="https://check-long-term-flood-risk.service.gov.uk" target="_blank" rel="noopener">Check long-term flood risk<span class="vh"> (opens in a new tab)</span></a></p>`};
   const z = floodZone(R), warn = R.flood;
   const status = warn.length || z>=3 ? "bad" : z===2 ? "warn" : "good";
   const value = warn.length ? `${warn.length} active flood ${warn.length>1?"warnings":"warning"} nearby` : z>1 ? `Flood zone ${z} (rivers and sea)` : "Zone 1, low risk from rivers and sea";
@@ -368,6 +377,7 @@ function topicFlood(R){
 }
 
 function topicCrime(R){
+  if(failed(R,"crime")) return failedTopic("crime","Crime nearby","Police.uk");
   const c = R.crime;
   const entries = Object.entries(c.by).sort((a,b)=>b[1]-a[1]);
   const max = entries[0]?.[1]||1;
@@ -381,6 +391,7 @@ function topicCrime(R){
 }
 
 function topicCommute(R, dest){
+  if(failed(R,"commute")) return failedTopic("commute","Commute at 8am","TfL Journey Planner");
   const js = R.commute;
   if(!js.length) return {id:"commute",name:"Commute at 8am",status:"info",value:"No route found",body:`<p>TfL found no route to ${esc(dest)}. Check the postcode you travel to.</p>`};
   const m = js[0].mins, status = m<=35?"good":m<=50?"warn":"bad";
@@ -390,6 +401,7 @@ function topicCommute(R, dest){
 }
 
 function topicRestrictions(R){
+  if(failed(R,"designations")) return failedTopic("restrictions","Planning restrictions","planning.data.gov.uk");
   const d = R.designations.filter(x=>x.dataset!=="flood-risk-zone");
   const listed = hasDs(R,"listed-building-outline"), cons = hasDs(R,"conservation-area"), a4 = hasDs(R,"article-4-direction-area");
   const status = listed ? "bad" : (cons||a4) ? "warn" : "good";
@@ -401,11 +413,12 @@ function topicRestrictions(R){
 }
 
 function topicPrices(R){
+  if(failed(R,"prices")) return failedTopic("prices","Sold prices on this postcode","HM Land Registry");
   const p = R.prices;
   const cutoff = String(new Date().getFullYear()-3);
   const recent = p.filter(x=>x.date>=cutoff).length;
-  return {id:"prices",name:"Sold prices on this postcode",status:"info",value: p.length ? `${p.length} sales recorded, ${recent} in the last 3 years` : "No sales recorded",
-    body: p.length ? `<div class="tablebox"><table><caption>Most recent sales first</caption><thead><tr><th scope="col">Date</th><th scope="col">Address</th><th scope="col" class="r">Price</th></tr></thead><tbody>${p.slice(0,10).map(x=>`<tr><td class="num">${fmtDate(x.date)}</td><td>${esc(x.address)}<br><span class="small">${esc(x.type.replace("-"," or "))}</span></td><td class="r num">${gbp(x.price)}</td></tr>`).join("")}</tbody></table></div><p class="src">Source: HM Land Registry Price Paid Data</p>`
+  return {id:"prices",name:"Sold prices on this postcode",status:"info",value: p.length ? `${p.length>=100?"100+":p.length} ${p.length===1?"sale":"sales"} since 1995, ${recent>=100?"100+":recent} in the last 3 years` : "No sales recorded",
+    body: p.length ? `<div class="tablebox"><table><caption>${p.length>10?`The 10 most recent of ${p.length>=100?"100+":p.length} sales`:"Most recent sales first"}</caption><thead><tr><th scope="col">Date</th><th scope="col">Address</th><th scope="col" class="r">Price</th></tr></thead><tbody>${p.slice(0,10).map(x=>`<tr><td class="num">${fmtDate(x.date)}</td><td>${esc(x.address)}<br><span class="small">${esc(x.type.replace("-"," or "))}</span></td><td class="r num">${gbp(x.price)}</td></tr>`).join("")}</tbody></table></div><p class="src">Source: HM Land Registry Price Paid Data</p>`
       : `<p>No sales on this postcode are recorded since 1995.</p><p class="src">Source: HM Land Registry Price Paid Data</p>`};
 }
 
@@ -469,7 +482,9 @@ async function runLive(pc, dest){
     settle(livePlanningDesignations(place.lat,place.lng)), settle(livePrices(place.postcode)),
     settle(liveCommute(place.lat,place.lng,dest)), settle(liveEPC(place.postcode))
   ]);
-  return { place,
+  const failed = {crime:!crime.ok, flood:!flood.ok, designations:!des.ok, prices:!prices.ok, commute:!commute.ok, epc:!epc.ok && !!CONFIG.PROXY_BASE};
+  [["crime",crime],["flood warnings",flood],["planning data",des],["Land Registry",prices],["TfL",commute],["EPC",epc]].forEach(([n,r])=>{ if(!r.ok) console.warn("Before you move: "+n+" failed", r.e); });
+  return { place, failed,
     crime: crime.ok ? crime.v : {month:null,total:0,by:{}}, flood: flood.ok ? flood.v : [],
     designations: des.ok ? des.v : [], prices: prices.ok ? prices.v : [],
     commute: commute.ok ? commute.v : [], epc: epc.ok ? epc.v : {notConnected:true} };
