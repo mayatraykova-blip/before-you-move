@@ -6,11 +6,13 @@
 //
 // Routes
 //   GET /epc?postcode=N16%200AS   -> { certificates: [...] } latest certificate per address
-//   GET /certificate?number=XXXX-XXXX-XXXX-XXXX-XXXX -> running costs, scores, heating for one certificate
+//   GET /epc?postcode=...&kind=commercial -> the same, from the non-domestic register
+//   GET /certificate?number=XXXX-XXXX-XXXX-XXXX-XXXX -> details for one certificate (home or commercial)
+//   GET /fsa?lat=51.5&lng=-0.1     -> food businesses within about 500 m, with hygiene ratings
 //   GET /tfl/<any TfL path>        -> passthrough to api.tfl.gov.uk with app_key added
 //
 // Secrets (set with `wrangler secret put`): EPC_TOKEN, TFL_APP_KEY
-// Vars (wrangler.toml): ALLOWED_ORIGIN, EPC_SEARCH_URL
+// Vars (wrangler.toml): ALLOWED_ORIGIN, EPC_SEARCH_URL, optional EPC_COMMERCIAL_SEARCH_URL
 
 export default {
   async fetch(request, env, ctx) {
@@ -31,6 +33,7 @@ export default {
     try {
       if (url.pathname === "/epc") return await epc(url, env, ctx, cors);
       if (url.pathname === "/certificate") return await certificate(url, env, ctx, cors);
+      if (url.pathname === "/fsa") return await fsa(url, ctx, cors);
       if (url.pathname.startsWith("/tfl/")) return await tfl(url, env, cors);
       return json({ error: "Not found" }, 404, cors);
     } catch (err) {
@@ -60,15 +63,18 @@ async function epc(url, env, ctx, cors) {
   const postcode = (url.searchParams.get("postcode") || "").trim().toUpperCase();
   if (!POSTCODE.test(postcode)) return json({ error: "Enter a full postcode" }, 400, cors);
   if (!env.EPC_TOKEN || !env.EPC_SEARCH_URL) return json({ notConnected: true }, 200, cors);
+  const commercial = url.searchParams.get("kind") === "commercial";
 
   // Cache for a day: certificates change rarely and this keeps us well inside rate limits.
-  const cacheKey = new Request("https://cache.before-you-move/epc/" + encodeURIComponent(postcode));
+  const cacheKey = new Request("https://cache.before-you-move/epc/" + (commercial ? "commercial/" : "") + encodeURIComponent(postcode));
   const cache = caches.default;
   const hit = await cache.match(cacheKey);
   if (hit) return withCors(hit, cors);
 
   // The API documents postcodes as "LS1+4AP", so encode the space as a plus.
-  const upstream = env.EPC_SEARCH_URL.replace("{postcode}", encodeURIComponent(postcode).replace(/%20/g, "+"));
+  let searchUrl = env.EPC_SEARCH_URL;
+  if (commercial) searchUrl = env.EPC_COMMERCIAL_SEARCH_URL || searchUrl.replace("/domestic/search", "/non-domestic/search");
+  const upstream = searchUrl.replace("{postcode}", encodeURIComponent(postcode).replace(/%20/g, "+"));
   const res = await fetch(upstream, {
     headers: { Authorization: "Bearer " + env.EPC_TOKEN, Accept: "application/json" }
   });
@@ -111,7 +117,9 @@ function normaliseCertificate(r) {
   return {
     address,
     certificateNumber: pick(r, "certificateNumber", "lmk-key") || "",
-    band: pick(r, "current-energy-rating", "currentEnergyRating", "currentEnergyEfficiencyBand"),
+    band: pick(r, "current-energy-rating", "currentEnergyRating", "currentEnergyEfficiencyBand", "asset-rating-band", "assetRatingBand") || bandFromAssetRating(pick(r, "asset-rating", "assetRating")),
+    assetRating: num(pick(r, "asset-rating", "assetRating")) || undefined,
+    propertyType: pick(r, "property-type", "propertyType") || undefined,
     score: num(pick(r, "current-energy-efficiency", "currentEnergyEfficiency")),
     potentialBand: pick(r, "potential-energy-rating", "potentialEnergyRating"),
     potentialScore: num(pick(r, "potential-energy-efficiency", "potentialEnergyEfficiency")),
@@ -125,7 +133,7 @@ function normaliseCertificate(r) {
 
 async function tfl(url, env, cors) {
   const target = new URL("https://api.tfl.gov.uk" + url.pathname.slice(4) + url.search);
-  if (!target.pathname.startsWith("/Journey/") && !target.pathname.startsWith("/Line/") && !target.pathname.startsWith("/StopPoint/")) {
+  if (!["/Journey/", "/Line/", "/StopPoint", "/crowding/"].some(p => target.pathname.startsWith(p))) {
     return json({ error: "Route not allowed" }, 403, cors);
   }
   if (env.TFL_APP_KEY) target.searchParams.set("app_key", env.TFL_APP_KEY);
@@ -157,6 +165,11 @@ async function certificate(url, env, ctx, cors) {
   if (!res.ok) throw new Error("EPC API returned " + res.status);
   const raw = await res.json();
   const d = raw.data || raw;
+  if (d.asset_rating !== undefined || String(d.assessment_type || d.schema_type || "").startsWith("CEPC")) {
+    const out = json(await commercialDetails(d, base, env), 200, cors, { "Cache-Control": "public, max-age=604800" });
+    ctx.waitUntil(cache.put(cacheKey, out.clone()));
+    return out;
+  }
 
   // Older schemas wrap values as {"value": 214, "currency": "GBP"}; newer ones use plain numbers.
   const val = v => (v && typeof v === "object" && "value" in v) ? v.value : v;
@@ -175,6 +188,78 @@ async function certificate(url, env, ctx, cors) {
     estAnnual: n("heating_cost_current") + n("hot_water_cost_current") + n("lighting_cost_current"),
     estAnnualPotential: n("heating_cost_potential") + n("hot_water_cost_potential") + n("lighting_cost_potential")
   }, 200, cors, { "Cache-Control": "public, max-age=604800" });
+  ctx.waitUntil(cache.put(cacheKey, out.clone()));
+  return out;
+}
+
+// Commercial asset ratings run the other way to homes: lower is better.
+function bandFromAssetRating(v) {
+  const n = Number(v);
+  if (v === undefined || v === null || v === "" || !Number.isFinite(n)) return undefined;
+  if (n < 0) return "A+";
+  if (n <= 25) return "A";
+  if (n <= 50) return "B";
+  if (n <= 75) return "C";
+  if (n <= 100) return "D";
+  if (n <= 125) return "E";
+  if (n <= 150) return "F";
+  return "G";
+}
+
+async function commercialDetails(d, base, env) {
+  const ti = d.technical_information || {};
+  const out = {
+    kind: "commercial",
+    assetRating: num(d.asset_rating),
+    band: d.current_energy_efficiency_band || bandFromAssetRating(d.asset_rating),
+    propertyType: d.property_type || "",
+    floorArea: num(ti.floor_area),
+    heating: ti.main_heating_fuel || "",
+    validUntil: String(d.valid_until || "").slice(0, 10),
+    newBuildBenchmark: num(d.new_build_benchmark),
+    existingStockBenchmark: num(d.existing_stock_benchmark),
+    recommendations: []
+  };
+  // Recommendations sit on a linked recommendation report. Read them from here if present, else fetch the link.
+  let rr = (d.short_payback || d.medium_payback) ? d : null;
+  if (!rr && d.related_certificate_number) {
+    try {
+      const res = await fetch(base + "/api/certificate?certificate_number=" + encodeURIComponent(d.related_certificate_number), {
+        headers: { Authorization: "Bearer " + env.EPC_TOKEN, Accept: "application/json" }
+      });
+      if (res.ok) { const j = await res.json(); rr = j.data || j; }
+    } catch (e) { rr = null; }
+  }
+  if (rr) {
+    for (const [key, payback] of [["short_payback", "Pays back within 3 years"], ["medium_payback", "Pays back in 3 to 7 years"], ["long_payback", "Pays back in over 7 years"]]) {
+      for (const r of (Array.isArray(rr[key]) ? rr[key] : [])) if (r && r.recommendation) out.recommendations.push({ text: r.recommendation, payback });
+    }
+    out.recommendations = out.recommendations.slice(0, 6);
+  }
+  return out;
+}
+
+// Food Hygiene Rating Scheme. Needs a version header, which the browser can't send cross-site without a preflight.
+async function fsa(url, ctx, cors) {
+  const lat = Number(url.searchParams.get("lat")), lng = Number(url.searchParams.get("lng"));
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return json({ error: "Give lat and lng" }, 400, cors);
+  const la = lat.toFixed(4), lo = lng.toFixed(4);
+  const cacheKey = new Request(`https://cache.before-you-move/fsa/${la},${lo}`);
+  const cache = caches.default;
+  const hit = await cache.match(cacheKey);
+  if (hit) return withCors(hit, cors);
+
+  const api = `https://api.ratings.food.gov.uk/Establishments?latitude=${la}&longitude=${lo}&maxDistanceLimit=0.3&pageSize=1000&sortOptionKey=distance`;
+  const res = await fetch(api, { headers: { "x-api-version": "2", Accept: "application/json" } });
+  if (!res.ok) throw new Error("FSA API returned " + res.status);
+  const raw = await res.json();
+  const list = (raw.establishments || []).map(e => ({
+    name: e.BusinessName || "",
+    type: e.BusinessType || "",
+    rating: e.RatingValue === undefined || e.RatingValue === null ? "" : String(e.RatingValue),
+    distanceMiles: Number(e.Distance)
+  }));
+  const out = json({ radiusMetres: 500, establishments: list }, 200, cors, { "Cache-Control": "public, max-age=86400" });
   ctx.waitUntil(cache.put(cacheKey, out.clone()));
   return out;
 }
