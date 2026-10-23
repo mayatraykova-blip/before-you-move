@@ -46,6 +46,14 @@ function json(body, status, headers, extra = {}) {
   });
 }
 
+// Cached responses already carry headers. Set the CORS headers rather than adding them,
+// so the browser never sees a duplicated Access-Control-Allow-Origin and blocks the page.
+function withCors(res, cors) {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(cors)) headers.set(k, v);
+  return new Response(res.body, { status: res.status, headers });
+}
+
 const POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i;
 
 async function epc(url, env, ctx, cors) {
@@ -57,7 +65,7 @@ async function epc(url, env, ctx, cors) {
   const cacheKey = new Request("https://cache.before-you-move/epc/" + encodeURIComponent(postcode));
   const cache = caches.default;
   const hit = await cache.match(cacheKey);
-  if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...cors } });
+  if (hit) return withCors(hit, cors);
 
   // The API documents postcodes as "LS1+4AP", so encode the space as a plus.
   const upstream = env.EPC_SEARCH_URL.replace("{postcode}", encodeURIComponent(postcode).replace(/%20/g, "+"));
@@ -139,7 +147,7 @@ async function certificate(url, env, ctx, cors) {
   const cacheKey = new Request("https://cache.before-you-move/certificate/" + number);
   const cache = caches.default;
   const hit = await cache.match(cacheKey);
-  if (hit) return new Response(hit.body, { headers: { ...Object.fromEntries(hit.headers), ...cors } });
+  if (hit) return withCors(hit, cors);
 
   const base = new URL(env.EPC_SEARCH_URL).origin;
   const res = await fetch(base + "/api/certificate?certificate_number=" + encodeURIComponent(number), {
