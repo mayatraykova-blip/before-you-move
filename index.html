@@ -350,9 +350,12 @@ function topicEnergy(R){
   }).join("");
   const diff = e.estAnnual - e.estAnnualPotential;
   const hasCosts = e.estAnnual > 0;
+  const dState = e.certificateNumber ? epcDetailCache[e.certificateNumber] : null;
+  const pending = !hasCosts && !!e.certificateNumber && !!CONFIG.PROXY_BASE && !demo && (dState === undefined || dState === "loading");
   return {id:"energy",name:"Energy costs",status,value: hasCosts ? `EPC band ${e.band}, about ${gbp(e.estAnnual)} a year` : `EPC band ${e.band}`,
     body:`${picker}
       ${hasCosts?`<div class="figure"><span class="big num">${gbp(e.estAnnual)}</span><span>estimated heating, hot water and lighting a year</span></div>`:`<div class="figure"><span class="big">Band ${esc(e.band)}</span><span>current energy rating</span></div>`}
+      ${pending?`<p class="small" role="status">Loading running costs for this property…</p>`:""}
       ${hasCosts&&diff>0?`<p>The certificate's recommended upgrades would bring this to about ${gbp(e.estAnnualPotential)}, a saving of ${gbp(diff)} a year.</p>`:""}
       <ol class="epc" aria-label="EPC rating: band ${e.band}${e.score?` (score ${e.score})`:""}${e.potentialScore?`, potential ${e.potentialScore} (band ${e.potentialBand})`:""}">${ladder}</ol>
       <p class="small">${[e.floorArea?`${esc(e.floorArea)} m²`:"", e.heating?esc(e.heating).toLowerCase():""].filter(Boolean).join(", ")}${e.floorArea||e.heating?". ":""}Certificate lodged ${fmtDate(e.lodged)}. EPCs last 10 years, so an older one may not reflect recent work.</p>${src}`};
@@ -432,6 +435,24 @@ function topicLicensing(R){
 
 function fmtDate(iso){ if(!iso) return ""; const d = new Date(iso); return isNaN(d) ? esc(iso) : d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
 
+/* ---------- EPC details: fetched only for the property the viewer selects ---------- */
+const epcDetailCache = {};
+async function loadEpcDetails(R){
+  const c = epcSel(R);
+  if(!c || !c.certificateNumber || !CONFIG.PROXY_BASE || demo || c.estAnnual > 0) return;
+  const num = c.certificateNumber;
+  if(epcDetailCache[num] === "loading") return;
+  if(epcDetailCache[num] === undefined){
+    epcDetailCache[num] = "loading";
+    try { epcDetailCache[num] = await getJSON(CONFIG.PROXY_BASE + "/certificate?number=" + encodeURIComponent(num)); }
+    catch(e){ epcDetailCache[num] = { failed:true }; console.warn("Before you move: EPC details failed", e); }
+  }
+  const d = epcDetailCache[num];
+  if(!d || d.failed || d.notFound || d.notConnected || d === "loading") return;
+  ["score","potentialScore","potentialBand","floorArea","heating","estAnnual","estAnnualPotential"].forEach(k=>{ if(d[k]) c[k] = d[k]; });
+  if(lastReport === R && epcSel(R) === c){ render(R, false); }
+}
+
 /* ---------- render ---------- */
 let openTopics = new Set();
 function render(R, fresh){
@@ -473,6 +494,7 @@ function render(R, fresh){
           <div class="t-body"><span class="s-word s-${t.status}">${STATUS[t.status].word}</span>${t.body}</div>
         </details>`).join("")}</div>
     </section>`;
+  loadEpcDetails(R);
 }
 
 /* ---------- orchestration ---------- */
