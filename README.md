@@ -6,7 +6,11 @@ Buying or renting? Understand the area, spot potential concerns and get a checkl
 
 Before you move takes a London postcode and returns one report built from six public data sources: energy performance, crime, flood risk, planning restrictions, sold prices and the 8am commute. It has two routes. Renters get a checklist for before they pay a holding deposit. Buyers get one for before they make an offer.
 
-**Status:** live at [mayatraykova-blip.github.io/before-you-move](https://mayatraykova-blip.github.io/before-you-move). Five of six data sources run live in the browser: postcodes.io, Police.uk, TfL, HM Land Registry and planning.data.gov.uk. I tested planning data against N1 1RA, which correctly returns the Upper Street (North) conservation area. EPC data waits on the proxy.
+**Status:** live at [mayatraykova-blip.github.io/before-you-move](https://mayatraykova-blip.github.io/before-you-move). All six data sources run live. I tested each against real postcodes:
+
+- **Planning:** N1 1RA returns the Upper Street (North) conservation area.
+- **EPC:** N16 0AS returns 25 certificates. For 77 Stoke Newington Church Street the report shows band C (score 74, potential 85), £2,410 a year in energy costs, and a £601 saving from the recommended upgrades.
+- **Sold prices, crime and commute:** real counts and journey times for every postcode tested.
 
 ---
 
@@ -34,6 +38,8 @@ The data that would change the decision is public. It is spread across at least 
 
 **I added a small server for the keys.** The EPC API needs a token and does not answer the CORS preflight that browsers send. A Cloudflare Worker holds the EPC token and TfL key, so neither sits in the public page.
 
+**I load running costs only for the property someone picks.** The EPC search returns band and date for every home on a postcode, but costs, scores and heating need one extra call per certificate. A postcode can hold 25 or more homes. Fetching all of them up front would make every check slow, so the page fetches details on selection and the proxy caches each certificate for a week.
+
 ## How it works
 
 ```
@@ -44,7 +50,7 @@ Browser (GitHub Pages, index.html)
  ├── planning.data.gov.uk .... conservation areas, flood zones, listed buildings, Article 4
  ├── HM Land Registry ........ sold prices on the postcode (SPARQL)
  └── Proxy (Cloudflare Worker)
-      ├── EPC register ....... certificates for every property on the postcode
+      ├── EPC register ....... certificates on the postcode, then costs and heating for the one selected
       └── TfL Journey Planner  8am commute, with the API key kept server-side
 ```
 
@@ -86,11 +92,16 @@ Never commit tokens. `.dev.vars` is git-ignored for local testing.
 
 ## What's next
 
-1. **Deploy the proxy and connect EPC.** The proxy reads both the old and new EPC field formats, but I haven't seen a live response from the new service yet.
-2. **Handle failures visibly.** Done: if a source doesn't respond, its row says so instead of showing an empty result.
-3. **Interview 10 renters.** The secondary data shows the market pressure and the cost of a bad pick. It doesn't show that renters would use a checker before signing. That is the riskiest assumption.
-4. **Landlord licensing by street.** Each borough publishes its selective licensing areas differently. Mapping them would let the renter card answer directly instead of pointing to the council.
-5. **Surface water flood risk.** It is the more common flood risk in London and is not in the data the page uses today.
+1. **Interview 10 renters.** The secondary data shows the market pressure and the cost of a bad pick. It doesn't show that renters would use a checker before signing. That is the riskiest assumption.
+2. **Landlord licensing by street.** Each borough publishes its selective licensing areas differently. Mapping them would let the renter card answer directly instead of pointing to the council.
+3. **Surface water flood risk.** It is the more common flood risk in London and is not in the data the page uses today.
+
+## What I fixed after launch
+
+- **Silent failures.** The first version showed an empty result when a source failed, so a failed crime lookup read as "0 reports". Each row now says when its data couldn't load.
+- **Capped sale counts.** I limited the Land Registry query to 25 results, so busy postcodes all showed exactly 25. It now fetches up to 100 and shows "100+" at the cap.
+- **Blocked EPC responses.** The proxy duplicated a browser security header when it answered from cache. Direct tests passed but the page was blocked. It now replaces the header instead of adding a second one.
+- **Duplicate addresses.** The EPC register stores some homes twice with different punctuation. The proxy merges them and keeps the latest certificate.
 
 ## Limits
 
