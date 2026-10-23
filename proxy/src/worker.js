@@ -245,7 +245,7 @@ async function fsa(url, ctx, cors) {
   const lat = Number(url.searchParams.get("lat")), lng = Number(url.searchParams.get("lng"));
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return json({ error: "Give lat and lng" }, 400, cors);
   const la = lat.toFixed(4), lo = lng.toFixed(4);
-  const cacheKey = new Request(`https://cache.before-you-move/fsa/${la},${lo}`);
+  const cacheKey = new Request(`https://cache.before-you-move/fsa-500m/${la},${lo}`);
   const cache = caches.default;
   const hit = await cache.match(cacheKey);
   if (hit) return withCors(hit, cors);
@@ -259,7 +259,9 @@ async function fsa(url, ctx, cors) {
     type: e.BusinessType || "",
     rating: e.RatingValue === undefined || e.RatingValue === null ? "" : String(e.RatingValue),
     distanceMiles: Number(e.Distance)
-  }));
+  }))
+    // The API doesn't reliably apply maxDistanceLimit, so keep only results within 500 m (0.31 miles).
+    .filter(e => Number.isFinite(e.distanceMiles) && e.distanceMiles <= 0.31);
   const out = json({ radiusMetres: 500, establishments: list }, 200, cors, { "Cache-Control": "public, max-age=86400" });
   ctx.waitUntil(cache.put(cacheKey, out.clone()));
   return out;
