@@ -1,6 +1,11 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Before you move</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Check a London postcode before you rent or buy. Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.">
+<meta name="description" content="Check a London postcode before you rent, buy or lease for a business. Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,500;112,700;125,800&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&display=swap">
@@ -29,6 +34,8 @@
   color-scheme:dark}
 
 *,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased}
 .wrap{max-width:42rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:flex;flex-direction:column;gap:32px}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1;letter-spacing:-.01em}
@@ -49,7 +56,8 @@ a{color:var(--accent);text-underline-offset:.18em}
 form{display:flex;flex-direction:column;gap:20px;background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:20px}
 fieldset{border:0;margin:0;padding:0;min-width:0}
 legend{font-weight:700;margin-bottom:10px;padding:0}
-.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:600px){.choice{grid-template-columns:1fr}}
 .choice input{position:absolute;opacity:0;width:1px;height:1px}
 .choice label{display:flex;flex-direction:column;gap:2px;min-height:64px;padding:12px 14px;border:2px solid var(--rule);border-radius:var(--r);cursor:pointer;background:var(--paper);transition:border-color .15s}
 .choice label strong{font-family:var(--display);font-stretch:112%;font-size:1.1rem}
@@ -145,27 +153,39 @@ th{font-size:.85rem;color:var(--ink-2);font-weight:700}
 .r{text-align:right}
 ul.plain{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 
+.hours{display:flex;flex-direction:column;gap:6px}
+.hours h3{font-family:var(--body);font-size:.95rem;font-weight:700;margin:0}
+.hours-plot{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));align-items:end;gap:3px;height:88px;border-bottom:1px solid var(--rule-strong);padding-top:4px}
+.hours-plot i{display:block;background:var(--ink-2);border-radius:3px 3px 0 0;min-height:2px}
+.hours-plot i.peak{background:var(--accent)}
+.hours-axis{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:3px;font-size:.75rem;color:var(--ink-2)}
+.hours-axis span{text-align:left;white-space:nowrap}
+.recs{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.recs .small{display:block}
 footer{font-size:.88rem;color:var(--ink-2);display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--rule);padding-top:20px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (prefers-reduced-motion:no-preference){.plate.enter{animation:hang .5s cubic-bezier(.2,.9,.3,1.2) both}@keyframes hang{from{transform:translateY(-8px) rotate(-1.5deg)}to{transform:none}}}
 </style>
-
+</head>
+<body>
 <a class="skip" href="#report">Skip to report</a>
 <div class="wrap">
   <header class="mast">
     <h1>Before you move</h1>
     <p class="tagline">Check the postcode. Know what to ask.</p>
-    <p class="lede">Buying or renting? Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.</p>
+    <p class="lede">Buying, renting or leasing for a business? Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.</p>
   </header>
 
   <form id="checkForm" novalidate aria-describedby="formErr">
     <fieldset>
-      <legend>Are you renting or buying?</legend>
+      <legend>What are you planning?</legend>
       <div class="choice">
         <input type="radio" name="route" id="routeRent" value="rent" checked>
         <label for="routeRent"><strong>Renting</strong><span>Before the holding deposit</span></label>
         <input type="radio" name="route" id="routeBuy" value="buy">
         <label for="routeBuy"><strong>Buying</strong><span>Before you make an offer</span></label>
+        <input type="radio" name="route" id="routeBiz" value="business">
+        <label for="routeBiz"><strong>Leasing for a business</strong><span>Before you sign a lease</span></label>
       </div>
     </fieldset>
     <div class="fields">
@@ -174,7 +194,18 @@ footer{font-size:.88rem;color:var(--ink-2);display:flex;flex-direction:column;ga
         <input type="text" id="pc" value="N16 0AS" maxlength="8" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" aria-describedby="pcHint">
         <span class="hint" id="pcHint">Any London postcode</span>
       </div>
-      <div class="field">
+      <div class="field" id="bizField" hidden>
+        <label for="bizType">Type of business</label>
+        <select id="bizType" aria-describedby="bizHint">
+          <option value="cafe">Café or restaurant</option>
+          <option value="takeaway">Takeaway</option>
+          <option value="pub">Pub or bar</option>
+          <option value="foodshop">Food shop</option>
+          <option value="other">Other shop, office or studio</option>
+        </select>
+        <span class="hint" id="bizHint">Changes the competitors and questions shown</span>
+      </div>
+      <div class="field" id="destField">
         <label for="dest">Where you travel to</label>
         <input type="text" id="dest" value="EC2R 8AH" maxlength="8" autocapitalize="characters" spellcheck="false" aria-describedby="destHint">
         <span class="hint" id="destHint">Work or study postcode</span>
@@ -189,7 +220,7 @@ footer{font-size:.88rem;color:var(--ink-2);display:flex;flex-direction:column;ga
   <main id="report" tabindex="-1" aria-live="polite" style="display:flex;flex-direction:column;gap:32px;outline:none"></main>
 
   <footer>
-    <p>Contains public sector information licensed under the Open Government Licence v3.0. Data from HM Land Registry, the Environment Agency, Police.uk, postcodes.io, planning.data.gov.uk and the EPC register. Powered by TfL Open Data. Contains OS data © Crown copyright and database right.</p>
+    <p>Contains public sector information licensed under the Open Government Licence v3.0. Data from HM Land Registry, the Environment Agency, Police.uk, postcodes.io, planning.data.gov.uk, the EPC register and the Food Standards Agency. Powered by TfL Open Data. Contains OS data © Crown copyright and database right.</p>
     <p>This report is guidance, not a survey or legal advice. Check anything that matters to your decision with the agent, landlord or your solicitor.</p>
   </footer>
 </div>
@@ -207,6 +238,8 @@ let route = "rent";
 let demo = false;
 let lastReport = null;
 let epcIndex = 0;
+let bizEpcIndex = 0;
+let bizType = "cafe";
 const epcSel = R => (R.epc && R.epc.certificates && R.epc.certificates[epcIndex]) || null;
 
 const $ = s => document.querySelector(s);
@@ -269,6 +302,56 @@ async function liveEPC(pc){
   return getJSON(CONFIG.PROXY_BASE + "/epc?postcode=" + encodeURIComponent(pc));
 }
 
+/* ---------- business route: fetched only when someone picks it ---------- */
+function tflGet(path){
+  const url = CONFIG.PROXY_BASE ? CONFIG.PROXY_BASE + "/tfl" + path : "https://api.tfl.gov.uk" + path + (CONFIG.TFL_APP_KEY ? (path.includes("?")?"&":"?") + "app_key=" + CONFIG.TFL_APP_KEY : "");
+  return getJSON(url);
+}
+async function liveCommercialEPC(pc){
+  if(!CONFIG.PROXY_BASE) return { notConnected:true };
+  return getJSON(CONFIG.PROXY_BASE + "/epc?kind=commercial&postcode=" + encodeURIComponent(pc));
+}
+async function liveCompetitors(lat,lng){
+  if(!CONFIG.PROXY_BASE) return { notConnected:true };
+  return getJSON(`${CONFIG.PROXY_BASE}/fsa?lat=${lat}&lng=${lng}`);
+}
+// TfL crowding gives each station's busyness in 15-minute bands, as a share of its busiest-ever level.
+function parseCrowding(c){
+  const days = Array.isArray(c && c.daysOfWeek) ? c.daysOfWeek : [];
+  const byDay = {};
+  days.forEach(d=>{
+    const h = Array(24).fill(null);
+    (d.timeBands||[]).forEach(t=>{
+      const hr = parseInt(String(t.timeBand||"").slice(0,2),10);
+      const v = Number(t.percentageOfBaseLine ?? t.percentageOfBaseline);
+      if(Number.isFinite(hr) && Number.isFinite(v)) h[hr] = Math.max(h[hr] ?? 0, v);
+    });
+    byDay[String(d.dayOfWeek||"").slice(0,3).toUpperCase()] = h;
+  });
+  const avg = keys => Array.from({length:24},(_,i)=>{ const vals = keys.map(k=>byDay[k]?.[i]).filter(v=>v!=null); return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null; });
+  const weekday = avg(["MON","TUE","WED","THU","FRI"]), saturday = avg(["SAT"]);
+  const any = [...weekday, ...saturday].some(v=>v>0);
+  return any ? { weekday, saturday } : { noData:true };
+}
+async function liveFootfall(lat,lng){
+  const sp = await tflGet(`/StopPoint?lat=${lat}&lon=${lng}&stopTypes=NaptanMetroStation&radius=1000`);
+  const stops = (sp.stopPoints||[]).filter(x=>/^940GZZLU/.test(x.naptanId||x.id||"")).sort((a,b)=>a.distance-b.distance);
+  if(!stops.length) return { none:true };
+  const st = stops[0];
+  const c = await tflGet(`/crowding/${encodeURIComponent(st.naptanId||st.id)}`);
+  return { station: String(st.commonName||"").replace(/ Underground Station$/i,""), distance: Math.round(st.distance), ...parseCrowding(c) };
+}
+async function ensureBiz(R){
+  if(route!=="business" || !R || R.biz || demo) return;
+  R.biz = "loading";
+  const settle = p => p.then(v=>({ok:true,v}), e=>({ok:false,e}));
+  const [epc, foot, comp] = await Promise.all([settle(liveCommercialEPC(R.place.postcode)), settle(liveFootfall(R.place.lat,R.place.lng)), settle(liveCompetitors(R.place.lat,R.place.lng))]);
+  [["commercial EPC",epc],["TfL crowding",foot],["FSA",comp]].forEach(([n,r])=>{ if(!r.ok) console.warn("Before you move: "+n+" failed", r.e); });
+  R.biz = { failed:{ epc:!epc.ok, footfall:!foot.ok, competitors:!comp.ok },
+    epc: epc.ok ? epc.v : {}, footfall: foot.ok ? foot.v : {}, competitors: comp.ok ? comp.v : {} };
+  if(lastReport === R) render(R, false);
+}
+
 /* ---------- sample report (illustrative, used when live calls are blocked) ---------- */
 const SAMPLE = {
   place:{ postcode:"N16 0AS", borough:"Hackney", ward:"Stoke Newington", lat:51.562065, lng:-0.078175, inLondon:true },
@@ -286,7 +369,27 @@ const SAMPLE = {
   epc:{ certificates:[
     { address:"Flat 2, 41 Example Road", band:"E", score:47, potentialBand:"C", potentialScore:72, lodged:"2019-04-02", floorArea:58, heating:"Boiler and radiators, mains gas", estAnnual:1680, estAnnualPotential:1090 },
     { address:"Flat 1, 43 Example Road", band:"C", score:71, potentialBand:"B", potentialScore:83, lodged:"2023-02-17", floorArea:64, heating:"Boiler and radiators, mains gas", estAnnual:980, estAnnualPotential:820 }
-  ] }
+  ] },
+  biz:{ failed:{},
+    epc:{ certificates:[
+      { address:"Ground Floor, 120 Example High Street", band:"E", assetRating:112, lodged:"2018-06-11", propertyType:"A1/A2 Retail and Financial/Professional services", floorArea:86, heating:"Natural Gas", validUntil:"2028-06-10", newBuildBenchmark:38, existingStockBenchmark:97,
+        recommendations:[{text:"Consider replacing T8 lamps with retrofit T5 conversion kit.",payback:"Pays back within 3 years"},{text:"Add optimum start/stop to the heating system.",payback:"Pays back in 3 to 7 years"},{text:"Consider installing an air source heat pump.",payback:"Pays back in over 7 years"}] },
+      { address:"Unit 2, 98 Example High Street", band:"C", assetRating:64, lodged:"2022-03-02", propertyType:"A3/A4/A5 Restaurant and Cafes/Drinking Establishments and Hot Food takeaways", floorArea:120, heating:"Grid Supplied Electricity", validUntil:"2032-03-01", newBuildBenchmark:30, existingStockBenchmark:82, recommendations:[] }
+    ] },
+    footfall:{ station:"Example Underground station", distance:650,
+      weekday:[0,0,0,0,0,0.08,0.31,0.72,0.95,0.58,0.36,0.34,0.41,0.43,0.40,0.42,0.55,0.81,0.88,0.52,0.38,0.29,0.18,0.07],
+      saturday:[0,0,0,0,0,0.03,0.09,0.17,0.26,0.38,0.49,0.58,0.64,0.66,0.65,0.63,0.60,0.57,0.52,0.47,0.42,0.36,0.25,0.11] },
+    competitors:{ radiusMetres:500, establishments:[
+      {name:"Example Café",type:"Restaurant/Cafe/Canteen",rating:"5",distanceMiles:0.02},{name:"Example Bakery",type:"Retailers - other",rating:"4",distanceMiles:0.04},
+      {name:"Example Kitchen",type:"Restaurant/Cafe/Canteen",rating:"5",distanceMiles:0.05},{name:"Example Pizza",type:"Takeaway/sandwich shop",rating:"3",distanceMiles:0.06},
+      {name:"The Example Arms",type:"Pub/bar/nightclub",rating:"5",distanceMiles:0.07},{name:"Example Coffee",type:"Restaurant/Cafe/Canteen",rating:"4",distanceMiles:0.08},
+      {name:"Example Deli",type:"Retailers - other",rating:"5",distanceMiles:0.09},{name:"Example Noodle Bar",type:"Restaurant/Cafe/Canteen",rating:"5",distanceMiles:0.11},
+      {name:"Example Express",type:"Retailers - supermarkets/hypermarkets",rating:"5",distanceMiles:0.12},{name:"Example Grill",type:"Takeaway/sandwich shop",rating:"4",distanceMiles:0.13},
+      {name:"Example Brasserie",type:"Restaurant/Cafe/Canteen",rating:"5",distanceMiles:0.15},{name:"Example Wine Bar",type:"Pub/bar/nightclub",rating:"4",distanceMiles:0.17},
+      {name:"Example Tea Room",type:"Restaurant/Cafe/Canteen",rating:"3",distanceMiles:0.21},{name:"Example Bistro",type:"Restaurant/Cafe/Canteen",rating:"5",distanceMiles:0.24},
+      {name:"Example Fish Bar",type:"Takeaway/sandwich shop",rating:"5",distanceMiles:0.27}
+    ] }
+  }
 };
 
 
@@ -433,6 +536,161 @@ function topicLicensing(R){
       <p>There's no single open dataset of licensed homes yet, so ask the agent for the licence and check ${esc(R.place.borough)} council's public register.</p>`};
 }
 
+/* ---------- business route ---------- */
+const BIZ = {
+  cafe:{ fsa:["Restaurant/Cafe/Canteen"], noun:"cafés and restaurants" },
+  takeaway:{ fsa:["Takeaway/sandwich shop"], noun:"takeaways and sandwich shops" },
+  pub:{ fsa:["Pub/bar/nightclub"], noun:"pubs and bars" },
+  foodshop:{ fsa:["Retailers - other","Retailers - supermarkets/hypermarkets"], noun:"food shops" },
+  other:{ fsa:["Restaurant/Cafe/Canteen","Takeaway/sandwich shop","Pub/bar/nightclub"], noun:"places to eat and drink", amenity:true }
+};
+const CEPC_BANDS = [["A+","Below 0"],["A","0–25"],["B","26–50"],["C","51–75"],["D","76–100"],["E","101–125"],["F","126–150"],["G","Over 150"]];
+const bizSel = R => (R.biz && R.biz.epc && R.biz.epc.certificates && R.biz.epc.certificates[bizEpcIndex]) || null;
+const bizFailed = (R,k) => !!(R.biz && R.biz.failed && R.biz.failed[k]);
+const bizLoading = R => R.biz === "loading" || !R.biz;
+const loadingTopic = (id,name) => ({id,name,status:"info",value:"Loading…",body:`<p role="status">Loading this data…</p>`});
+const expired = c => c && c.validUntil && c.validUntil < new Date().toISOString().slice(0,10);
+const hourLabel = h => h===0?"midnight":h===12?"midday":h<12?`${h}am`:`${h-12}pm`;
+function peakHour(arr){ let best=-1, v=-1; (arr||[]).forEach((x,i)=>{ if(x!=null && x>v){ v=x; best=i; } }); return best; }
+
+function topicBizEnergy(R){
+  const id="bizenergy", name="Commercial energy rating", src='<p class="src">Source: EPC register (MHCLG), non-domestic certificates</p>';
+  if(bizLoading(R)) return loadingTopic(id,name);
+  if(bizFailed(R,"epc")) return failedTopic(id,name,"The EPC register");
+  const all = R.biz.epc;
+  if(all.notConnected) return {id,name,status:"info",value:"Not connected yet",body:`<p>Commercial EPC data needs the proxy to be connected.</p>${src}`};
+  if(!(all.certificates||[]).length) return {id,name,status:"warn",value:"No commercial EPC found",
+    body:`<p>No commercial EPC is registered on this postcode. Landlords must provide one when they let a commercial building, so ask for it before you sign.</p>${src}`};
+  const c = bizSel(R) || all.certificates[0];
+  let status = ["A+","A","B","C"].includes(c.band) ? "good" : ["F","G"].includes(c.band) ? "bad" : "warn";
+  if(status==="good" && expired(c)) status = "warn";
+  const picker = all.certificates.length > 1
+    ? `<div class="field"><label for="bizEpcPick">Which unit?</label><select id="bizEpcPick">${all.certificates.map((x,i)=>`<option value="${i}"${i===bizEpcIndex?" selected":""}>${esc(x.address)}</option>`).join("")}</select></div>`
+    : `<p class="small">${esc(c.address)}</p>`;
+  const ladder = CEPC_BANDS.map(([b,range],i)=>`<li><span class="fill" style="width:${30+i*8}%;background:var(--epc-${b==="A+"?"a":b.toLowerCase()})"><span>${range}</span><span>${b}</span></span><span class="mark">${c.band===b?(c.assetRating?`<b>${c.assetRating}</b> this unit`:"<b>&#9664;</b> this unit"):""}</span></li>`).join("");
+  const legal = ["F","G"].includes(c.band) ? "Landlords in England can't let a commercial building rated F or G, including continuing an existing lease, unless they've registered an exemption."
+    : ["D","E"].includes(c.band) ? "This meets the current legal minimum of band E. The government has consulted on raising the minimum for commercial lets, so upgrades could become necessary during a long lease."
+    : "This is comfortably above the legal minimum of band E.";
+  const d = c.certificateNumber ? bizDetailCache[c.certificateNumber] : null;
+  const pending = !!c.certificateNumber && !!CONFIG.PROXY_BASE && !demo && (d === undefined || d === "loading") && !c.propertyType;
+  const facts = [c.propertyType, c.floorArea?`${c.floorArea} m²`:"", c.heating?`heated by ${String(c.heating).toLowerCase()}`:""].filter(Boolean).map(esc).join(", ");
+  const recs = (c.recommendations||[]);
+  return {id,name,status,value:`EPC band ${esc(c.band)}${c.assetRating?`, asset rating ${c.assetRating}`:""}${expired(c)?", expired":""}`,
+    body:`${picker}
+      <div class="figure"><span class="big">Band ${esc(c.band)}</span><span>${c.assetRating?`asset rating ${c.assetRating}. Lower is better.`:"commercial energy rating"}</span></div>
+      <p>${legal}</p>
+      ${pending?`<p class="small" role="status">Loading details for this unit…</p>`:""}
+      ${c.newBuildBenchmark||c.existingStockBenchmark?`<p class="small">A new building of this type would typically score ${c.newBuildBenchmark||"n/a"}. A typical existing one scores ${c.existingStockBenchmark||"n/a"}.</p>`:""}
+      <ol class="epc" aria-label="Commercial EPC: band ${esc(c.band)}${c.assetRating?`, asset rating ${c.assetRating}`:""}">${ladder}</ol>
+      ${recs.length?`<h3 class="t-name" style="font-size:1rem">Recommended improvements</h3><ul class="recs">${recs.map(r=>`<li>${esc(r.text)}<span class="small">${esc(r.payback)}</span></li>`).join("")}</ul>`:""}
+      <p class="small">${facts?facts+". ":""}${c.lodged?`Certificate lodged ${fmtDate(c.lodged)}. `:""}${c.validUntil?(expired(c)?`<b>It expired on ${fmtDate(c.validUntil)}.</b>`:`Valid until ${fmtDate(c.validUntil)}.`):""}</p>${src}`};
+}
+
+function hoursChart(title, arr, max, peak){
+  const hrs = Array.from({length:18},(_,i)=>i+6);
+  const summary = peak>=0 ? `${title}: busiest around ${hourLabel(peak)}` : `${title}: no data`;
+  return `<div class="hours"><h3>${title}</h3>
+    <div class="hours-plot" role="img" aria-label="${summary}">${hrs.map(h=>{ const v = arr?.[h] ?? 0; return `<i class="${h===peak?"peak":""}" style="height:${max?Math.max(2,(v/max*100)).toFixed(1):2}%"></i>`; }).join("")}</div>
+    <div class="hours-axis" aria-hidden="true">${hrs.map(h=>`<span>${h%3===0?hourLabel(h):""}</span>`).join("")}</div></div>`;
+}
+
+function topicFootfall(R){
+  const id="footfall", name="Busy times nearby";
+  if(bizLoading(R)) return loadingTopic(id,name);
+  if(bizFailed(R,"footfall")) return failedTopic(id,name,"TfL's crowding data");
+  const f = R.biz.footfall;
+  if(f.none) return {id,name,status:"info",value:"No Underground station within 1 km",body:`<p>TfL only publishes busyness for Underground stations, and there isn't one within 1 km. Count passers-by yourself at the times you'd trade.</p>`};
+  if(f.noData) return {id,name,status:"info",value:`No busyness data for ${esc(f.station)}`,body:`<p>TfL has no busyness data for ${esc(f.station)} (${f.distance} m away).</p>`};
+  const wp = peakHour(f.weekday), sp = peakHour(f.saturday);
+  const max = Math.max(...f.weekday.filter(v=>v!=null), ...f.saturday.filter(v=>v!=null));
+  const lunch = Math.max(f.weekday[12]||0, f.weekday[13]||0), evening = Math.max(f.weekday[19]||0, f.weekday[20]||0);
+  const pct = v => Math.round(v / (f.weekday[wp]||1) * 100);
+  return {id,name,status:"info",value:`${esc(f.station)} is busiest around ${hourLabel(wp)} on weekdays`,
+    body:`<p>${esc(f.station)} is ${f.distance} m away. Station busyness shows when people are around, not how many walk past your door.</p>
+      ${hoursChart("Weekdays", f.weekday, max, wp)}
+      ${hoursChart("Saturdays", f.saturday, max, sp)}
+      <p>At lunchtime the station is at about ${pct(lunch)}% of its weekday peak, and at ${pct(evening)}% in the early evening. Saturdays peak around ${hourLabel(sp)}.</p>
+      <p class="src">Source: TfL crowding data, typical week</p>`};
+}
+
+function topicCompetitors(R){
+  const t = BIZ[bizType], id="competitors", name = t.amenity ? "Places to eat and drink nearby" : "Similar businesses nearby";
+  if(bizLoading(R)) return loadingTopic(id,name);
+  if(bizFailed(R,"competitors")) return failedTopic(id,name,"The Food Standards Agency");
+  const all = R.biz.competitors;
+  if(all.notConnected) return {id,name,status:"info",value:"Not connected yet",body:"<p>Competitor data needs the proxy to be connected.</p>"};
+  const list = (all.establishments||[]).filter(e=>t.fsa.includes(e.type));
+  const rated = list.map(e=>+e.rating).filter(n=>Number.isFinite(n));
+  const avg = rated.length ? (rated.reduce((a,b)=>a+b,0)/rated.length).toFixed(1) : null;
+  const m = mi => Math.round(mi*1609);
+  return {id,name,status:"info",value:`${list.length} ${t.noun} within 500 m`,
+    body:`<div class="figure"><span class="big num">${list.length}</span><span>${t.noun} within about 500 m${avg?`, with an average hygiene rating of ${avg} out of 5`:""}</span></div>
+      ${list.length?`<div class="tablebox"><table><caption>${list.length>8?"The 8 nearest":"Nearest first"}</caption><thead><tr><th scope="col">Name</th><th scope="col" class="r">Distance</th><th scope="col" class="r">Hygiene</th></tr></thead><tbody>${list.slice(0,8).map(e=>`<tr><td>${esc(e.name)}</td><td class="r num">${Number.isFinite(e.distanceMiles)?m(e.distanceMiles)+" m":""}</td><td class="r num">${esc(e.rating)}</td></tr>`).join("")}</tbody></table></div>`:""}
+      <p class="small">${t.amenity?"Useful for staff and for judging how busy the street is at lunch.":"Competition isn't always bad. A cluster of cafés can mean the street draws people for food."} The register covers food businesses only.</p>
+      <p class="src">Source: Food Standards Agency, Food Hygiene Rating Scheme</p>`};
+}
+
+function topicBizCrime(R){
+  if(failed(R,"crime")) return failedTopic("bizcrime","Crime affecting businesses","Police.uk");
+  const keys = ["shoplifting","burglary","criminal-damage-arson","robbery","other-theft"];
+  const c = R.crime, rows = keys.map(k=>[k, c.by[k]||0]).sort((a,b)=>b[1]-a[1]);
+  const total = rows.reduce((a,[,n])=>a+n,0), max = rows[0]?.[1]||1;
+  const month = c.month ? new Date(c.month+"-01").toLocaleDateString("en-GB",{month:"long",year:"numeric"}) : "the latest month";
+  return {id:"bizcrime",name:"Crime affecting businesses",status:"info",value:`${c.by.shoplifting||0} shoplifting and ${c.by.burglary||0} burglary reports within about a mile`,
+    body:`<div class="figure"><span class="big num">${total}</span><span>shoplifting, burglary, criminal damage, robbery and theft reports within about a mile in ${month}</span></div>
+      <ul class="bars">${rows.map(([k,n])=>`<li><span>${esc(CRIME_LABEL[k]||k)}</span><span class="num">${n}</span><span class="track" aria-hidden="true"><i style="width:${(n/max*100).toFixed(1)}%"></i></span></li>`).join("")}</ul>
+      <p class="small">Burglary counts include homes as well as businesses. Compare with other streets you're considering.</p>
+      <p class="src">Source: <a href="https://data.police.uk" target="_blank" rel="noopener">data.police.uk<span class="vh"> (opens in a new tab)</span></a></p>`};
+}
+
+function bizQuestions(R){
+  const q = [], c = bizSel(R) || (R.biz && R.biz.epc && R.biz.epc.certificates && R.biz.epc.certificates[0]);
+  const ready = R.biz && R.biz !== "loading";
+  if(ready && !bizFailed(R,"epc") && !R.biz.epc.notConnected){
+    if(!c) q.push("Ask for the commercial EPC before you sign. The landlord must provide one when letting.");
+    else if(["F","G"].includes(c.band)) q.push(`The EPC is band ${c.band}. A building below band E can't legally be let without a registered exemption. Ask to see it on the PRS exemptions register.`);
+    else if(["D","E"].includes(c.band)) q.push(`The EPC is band ${c.band}. If the legal minimum rises during the lease, who pays for the upgrades?`);
+    if(c && expired(c)) q.push(`The EPC expired on ${fmtDate(c.validUntil)}. Ask for a current one.`);
+  }
+  if(bizType==="takeaway") q.push("Hot food takeaways need their own planning permission (sui generis), not Class E. Ask to see it before you sign.");
+  else if(bizType==="pub") q.push("Pubs and bars need their own planning permission (sui generis), not Class E. Ask to see it before you sign.");
+  else q.push("Does the premises have planning permission for Class E use? Ask to see it.");
+  if(bizType==="pub") q.push("Is there a premises licence for alcohol, and will it transfer to you?");
+  if(bizType==="cafe"||bizType==="takeaway") q.push("Will you sell alcohol, or hot food after 11pm? Both need a licence from the council.");
+  if(bizType==="foodshop") q.push("Will you sell alcohol? You'll need a premises licence from the council.");
+  if(bizType!=="other") q.push("Register as a food business with the council at least 28 days before you open.");
+  if(hasDs(R,"listed-building-outline")) q.push("A listed building is on or next to this site. Most changes need listed building consent, including signs and internal works.");
+  else if(hasDs(R,"conservation-area")) q.push("It's in a conservation area. New signs and shopfront changes need consent, so check before you budget for the fit-out.");
+  q.push("Is the lease inside or outside the Landlord and Tenant Act 1954? If it's outside, you have no automatic right to renew.");
+  q.push("Is it a full repairing lease? If so, get a schedule of condition so you don't pay to fix problems that were already there.");
+  q.push("Is there a break clause, and what conditions do you have to meet to use it?");
+  q.push("What are the business rates and service charge? Check whether you qualify for small business rate relief.");
+  const shop = R.crime.by.shoplifting||0;
+  if(!failed(R,"crime") && (bizType==="foodshop"||bizType==="other") && shop > R.crime.total*0.08) q.push("Shoplifting is one of the most reported crimes nearby. Ask what security the landlord provides and what your insurer will require.");
+  if(ready && !bizFailed(R,"footfall") && R.biz.footfall.weekday){ const wp = peakHour(R.biz.footfall.weekday); q.push(`Visit at the times you'd trade. The nearest station is busiest around ${hourLabel(wp)} on weekdays.`); }
+  if(ready && !bizFailed(R,"competitors") && !BIZ[bizType].amenity){ const n = (R.biz.competitors.establishments||[]).filter(e=>BIZ[bizType].fsa.includes(e.type)).length; if(n>=5) q.push(`There are ${n} ${BIZ[bizType].noun} within 500 m. Visit them at your busiest time to see how full they are.`); }
+  if(R.flood.length || floodZone(R)>1) q.push("Get a business insurance quote that covers flood damage to stock and equipment before you sign.");
+  return q;
+}
+
+const bizDetailCache = {};
+async function loadBizEpcDetails(R){
+  const c = bizSel(R);
+  if(!c || !c.certificateNumber || !CONFIG.PROXY_BASE || demo || c.propertyType) return;
+  const num = c.certificateNumber;
+  if(bizDetailCache[num] === "loading") return;
+  if(bizDetailCache[num] === undefined){
+    bizDetailCache[num] = "loading";
+    try { bizDetailCache[num] = await getJSON(CONFIG.PROXY_BASE + "/certificate?number=" + encodeURIComponent(num)); }
+    catch(e){ bizDetailCache[num] = { failed:true }; console.warn("Before you move: commercial EPC details failed", e); }
+  }
+  const d = bizDetailCache[num];
+  if(!d || d.failed || d.notFound || d.notConnected || d === "loading") return;
+  ["assetRating","band","propertyType","floorArea","heating","validUntil","newBuildBenchmark","existingStockBenchmark","recommendations"].forEach(k=>{ if(d[k] !== undefined && d[k] !== "" && d[k] !== 0) c[k] = d[k]; });
+  if(!c.propertyType) c.propertyType = "Commercial premises";
+  if(lastReport === R && bizSel(R) === c) render(R, false);
+}
+
 function fmtDate(iso){ if(!iso) return ""; const d = new Date(iso); return isNaN(d) ? esc(iso) : d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
 
 /* ---------- EPC details: fetched only for the property the viewer selects ---------- */
@@ -458,25 +716,29 @@ let openTopics = new Set();
 function render(R, fresh){
   lastReport = R;
   const dest = normPc($("#dest").value);
-  const shared = [topicEnergy(R), topicFlood(R), topicCrime(R), topicCommute(R,dest)];
-  const topics = route==="rent" ? [...shared, topicLicensing(R)] : [topicRestrictions(R), topicPrices(R), ...shared];
+  const biz = route==="business";
+  const shared = biz ? [] : [topicEnergy(R), topicFlood(R), topicCrime(R), topicCommute(R,dest)];
+  const topics = biz ? [topicBizEnergy(R), topicFootfall(R), topicCompetitors(R), topicBizCrime(R), topicRestrictions(R), topicFlood(R)]
+    : route==="rent" ? [...shared, topicLicensing(R)] : [topicRestrictions(R), topicPrices(R), ...shared];
   const counts = {bad:0,warn:0,good:0}; topics.forEach(t=>{ if(counts[t.status]!==undefined) counts[t.status]++; });
-  const qs = questions(R);
+  const qs = biz ? bizQuestions(R) : questions(R);
+  const label = {rent:"Renter", buy:"Buyer", business:"Business"}[route];
+  const ask = {rent:"Ask before you pay a holding deposit", buy:"Ask before you make an offer", business:"Ask before you sign a lease"}[route];
   const name = (R.place.ward || R.place.borough || "").replace(/&/g,"and");
   $("#report").innerHTML = `
     <section class="result-head" aria-labelledby="resultTitle">
-      <h2 class="vh" id="resultTitle">${route==="rent"?"Renter":"Buyer"} report for ${esc(R.place.postcode)}, ${esc(name)}</h2>
+      <h2 class="vh" id="resultTitle">${label} report for ${esc(R.place.postcode)}, ${esc(name)}</h2>
       <div class="plate${fresh?" enter":""}" aria-hidden="true"><div class="plate-in">
         <span class="plate-borough">London Borough of ${esc(R.place.borough)}</span>
         <span class="plate-name">${esc(name)}</span>
         <span class="plate-pc">${esc(R.place.postcode)}</span>
       </div></div>
-      <p class="tally">${route==="rent"?"Renter report":"Buyer report"}${demo?'<span class="sample-tag">Sample data</span>':""}
+      <p class="tally">${label} report${demo?'<span class="sample-tag">Sample data</span>':""}
         <span><b>${counts.bad}</b> potential ${counts.bad===1?"concern":"concerns"}</span><span><b>${counts.warn}</b> worth checking</span><span><b>${counts.good}</b> looking fine</span></p>
     </section>
 
     <section class="section" aria-labelledby="askTitle">
-      <h2 id="askTitle">${route==="rent"?"Ask before you pay a holding deposit":"Ask before you make an offer"}</h2>
+      <h2 id="askTitle">${ask}</h2>
       <ul class="checklist">${qs.map((q,i)=>`<li><label for="q${i}"><input type="checkbox" id="q${i}"><span>${q}</span></label></li>`).join("")}</ul>
       <p class="progress" id="progress" aria-live="polite">0 of ${qs.length} checked</p>
     </section>
@@ -494,7 +756,7 @@ function render(R, fresh){
           <div class="t-body"><span class="s-word s-${t.status}">${STATUS[t.status].word}</span>${t.body}</div>
         </details>`).join("")}</div>
     </section>`;
-  loadEpcDetails(R);
+  if(biz){ ensureBiz(R); loadBizEpcDetails(R); } else loadEpcDetails(R);
 }
 
 /* ---------- orchestration ---------- */
@@ -528,10 +790,10 @@ async function check(focusReport){
   const pc = normPc($("#pc").value), dest = normPc($("#dest").value);
   showError("");
   if(!PC_RE.test(pc)) return showError("Enter a full property postcode, for example N16 0AS.", "#pc");
-  if(!PC_RE.test(dest)) return showError("Enter the full postcode you travel to, for example EC2R 8AH.", "#dest");
+  if(route!=="business" && !PC_RE.test(dest)) return showError("Enter the full postcode you travel to, for example EC2R 8AH.", "#dest");
   $("#pc").value = pc; $("#dest").value = dest;
   const btn = $("#goBtn"); btn.setAttribute("aria-busy","true"); btn.textContent = "Checking postcode…";
-  epcIndex = 0; openTopics = new Set();
+  epcIndex = 0; bizEpcIndex = 0; openTopics = new Set();
   try {
     if(demo) throw new TypeError("demo");
     const R = await runLive(pc, dest);
@@ -553,14 +815,19 @@ async function check(focusReport){
 
 function setRoute(r){
   route = r;
-  $(r==="buy"?"#routeBuy":"#routeRent").checked = true;
+  $({rent:"#routeRent",buy:"#routeBuy",business:"#routeBiz"}[r]).checked = true;
+  $("#bizField").hidden = r!=="business";
+  $("#destField").hidden = r==="business";
   try { localStorage.setItem("bym-route", r); } catch(e){}
   if(lastReport) render(lastReport, false);
 }
-try { const r = localStorage.getItem("bym-route"); if (r === "buy" || r === "rent") route = r; } catch(e){}
+try { const r = localStorage.getItem("bym-route"); if (["rent","buy","business"].includes(r)) route = r; } catch(e){}
+try { const b = localStorage.getItem("bym-biz"); if (b && BIZ[b]) { bizType = b; $("#bizType").value = b; } } catch(e){}
+$("#bizType").addEventListener("change", e=>{ bizType = e.target.value; try { localStorage.setItem("bym-biz", bizType); } catch(err){} if(lastReport) render(lastReport,false); });
 document.querySelectorAll('input[name="route"]').forEach(el=>el.addEventListener("change", ()=>setRoute(el.value)));
 $("#checkForm").addEventListener("submit", e=>{ e.preventDefault(); check(true); });
 $("#report").addEventListener("change", e=>{
+  if(e.target.id==="bizEpcPick"){ bizEpcIndex = +e.target.value; openTopics.add("bizenergy"); render(lastReport,false); $("#bizEpcPick").focus(); }
   if(e.target.id==="epcPick"){ epcIndex = +e.target.value; openTopics.add("energy"); render(lastReport,false); $("#epcPick").focus(); }
   if(e.target.matches('.checklist input')){ const all = document.querySelectorAll(".checklist input"); const n = [...all].filter(x=>x.checked).length; $("#progress").textContent = `${n} of ${all.length} checked`; }
 });
@@ -569,3 +836,5 @@ $("#report").addEventListener("toggle", e=>{ const id = e.target.id?.replace("t-
 setRoute(route);
 check(false);
 </script>
+</body>
+</html>

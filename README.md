@@ -2,9 +2,9 @@
 
 **Check the postcode. Know what to ask.**
 
-Buying or renting? Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.
+Buying, renting or leasing for a business? Understand the area, spot potential concerns and get a checklist of questions to ask before you commit.
 
-Before you move takes a London postcode and returns one report built from six public data sources: energy performance, crime, flood risk, planning restrictions, sold prices and the 8am commute. It has two routes. Renters get a checklist for before they pay a holding deposit. Buyers get one for before they make an offer.
+Before you move takes a London postcode and returns one report built from six public data sources: energy performance, crime, flood risk, planning restrictions, sold prices and the 8am commute. It has three routes. Renters get a checklist for before they pay a holding deposit. Buyers get one for before they make an offer. Small businesses get one for before they sign a commercial lease.
 
 **Status:** live at [mayatraykova-blip.github.io/before-you-move](https://mayatraykova-blip.github.io/before-you-move). All six data sources run live. I tested each against real postcodes:
 
@@ -30,6 +30,14 @@ The data that would change the decision is public. It is spread across at least 
 
 **I started with renters in the framing, not buyers.** Buyers already get solicitor searches and surveys, and tools like PropertyData and Chimnie cover much of this. Renters get nothing comparable, and they decide in hours rather than over a conveyancing window of months. Buyers are still not fully served: one survey of 2,000 homeowners found 49% hit a surprise issue even though 55% had a survey done (Gas Safe Register).
 
+**I added small businesses as a third route.** A commercial lease usually runs for years, and the tenant often takes on repairs. Small business owners rarely have a surveyor checking the area for them. My search found law-firm guides on the commercial energy rules and no tool. The route reuses the postcode lookup, crime, planning, flood and the proxy, and adds three sources:
+
+- **Commercial EPCs.** Landlords in England can't let a commercial building rated F or G without a registered exemption, so the band is a legal question, not just a running cost.
+- **TfL station busyness by hour.** It isn't footfall past the door, but it shows when people are around, which matters for a café's lunch trade or a bar's evenings.
+- **Food Standards Agency ratings.** These count similar food businesses within 500 m and their hygiene scores.
+
+The checklist changes with the type of business. Takeaways and pubs need their own planning permission rather than Class E, so they get a different question from cafés and shops.
+
 **I chose postcode input over listing links.** Rightmove and Zoopla listings cannot be scraped within their terms. A postcode works with every open API and keeps the tool independent of any portal.
 
 **I didn't score crime.** A raw count within a mile always looks high near a station or high street, and there is no fair baseline in the data. The report shows the count and the top categories, and tells people to compare postcodes they are considering.
@@ -50,8 +58,9 @@ Browser (GitHub Pages, index.html)
  ├── planning.data.gov.uk .... conservation areas, flood zones, listed buildings, Article 4
  ├── HM Land Registry ........ sold prices on the postcode (SPARQL)
  └── Proxy (Cloudflare Worker)
-      ├── EPC register ....... certificates on the postcode, then costs and heating for the one selected
-      └── TfL Journey Planner  8am commute, with the API key kept server-side
+      ├── EPC register ....... home and commercial certificates, then details for the one selected
+      ├── TfL ................ 8am commute, nearest station and its busyness by hour
+      └── Food Standards Agency food businesses within 500 m, with hygiene ratings
 ```
 
 When live calls are blocked (for example in a sandboxed preview), the page falls back to a sample report and labels every card as sample data.
