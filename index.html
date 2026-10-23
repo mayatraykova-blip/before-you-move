@@ -558,7 +558,8 @@ const bizLoading = R => R.biz === "loading" || !R.biz;
 const loadingTopic = (id,name) => ({id,name,status:"info",value:"Loading…",body:`<p role="status">Loading this data…</p>`});
 const expired = c => c && c.validUntil && c.validUntil < new Date().toISOString().slice(0,10);
 const hourLabel = h => h===0?"midnight":h===12?"midday":h<12?`${h}am`:`${h-12}pm`;
-function peakHour(arr){ let best=-1, v=-1; (arr||[]).forEach((x,i)=>{ if(x!=null && x>v){ v=x; best=i; } }); return best; }
+// Only look at the hours the charts show (6am to 11pm), so the text never names a time that isn't drawn.
+function peakHour(arr){ let best=-1, v=-1; (arr||[]).forEach((x,i)=>{ if(i>=6 && x!=null && x>v){ v=x; best=i; } }); return best; }
 
 function topicBizEnergy(R){
   const id="bizenergy", name="Commercial energy rating", src='<p class="src">Source: EPC register (MHCLG), non-domestic certificates</p>';

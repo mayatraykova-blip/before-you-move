@@ -110,6 +110,8 @@ Never commit tokens. `.dev.vars` is git-ignored for local testing.
 - **Silent failures.** The first version showed an empty result when a source failed, so a failed crime lookup read as "0 reports". Each row now says when its data couldn't load.
 - **Capped sale counts.** I limited the Land Registry query to 25 results, so busy postcodes all showed exactly 25. It now fetches up to 100 and shows "100+" at the cap.
 - **Blocked EPC responses.** The proxy duplicated a browser security header when it answered from cache. Direct tests passed but the page was blocked. It now replaces the header instead of adding a second one.
+- **Competitor counts five times too high.** The business route first showed 375 cafés within 500 m of Stoke Newington Church Street. The Food Standards Agency API ignores its own distance limit, so the proxy now filters each result by its distance. The same postcode now shows 68.
+- **A station that peaks at 10pm.** TfL's data put Highbury & Islington's busiest weekday period at 21:45 to 23:45. I checked Bank as a control, and it peaks at 08:00 to 10:00 and 17:00 to 19:00, so my code was reading the data correctly. TfL builds this measure from WiFi connections, which overcounts people who linger. I kept the charts, show TfL's own peak windows under them, and explain the measure, so an odd result is visible as TfL's data and not my analysis.
 - **Duplicate addresses.** The EPC register stores some homes twice with different punctuation. The proxy merges them and keeps the latest certificate.
 
 ## Limits
