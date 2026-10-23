@@ -109,7 +109,8 @@ function pick(r, ...keys) {
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 
 function normaliseCertificate(r) {
-  const titleCase = s => String(s).toLowerCase().replace(/\b([a-z])/g, m => m.toUpperCase());
+  // Capitalise each word, but not the letter after an apostrophe ("Booth's", not "Booth'S").
+  const titleCase = s => String(s).toLowerCase().replace(/(^|[\s,(\/-])([a-z])/g, (m, p, c) => p + c.toUpperCase());
   const address = titleCase([pick(r, "address1", "addressLine1"), pick(r, "address2", "addressLine2"), pick(r, "address3", "addressLine3"), pick(r, "addressLine4")]
     .filter(Boolean).join(", ") || pick(r, "address", "fullAddress") || "")
     .replace(/(\d+[A-Za-z]?), (?=[A-Za-z])/g, "$1 ");
